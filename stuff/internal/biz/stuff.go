@@ -2,10 +2,12 @@ package biz
 
 import (
 	"context"
+	"strconv"
 
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/shopspring/decimal"
-	"google.golang.org/grpc"
+
+	userpb "stuff/api/other/user/v1"
 )
 
 // Stuff 是业务实体
@@ -32,28 +34,31 @@ type StuffRepo interface {
 
 // StuffUsecase 是 Stuff 的业务用例
 type StuffUsecase struct {
-	repo       StuffRepo
-	log        *log.Helper
-	userClient *grpc.ClientConn
+	repo          StuffRepo
+	log           *log.Helper
+	UserRpcClient userpb.UserClient
 }
 
 // NewStuffUsecase 创建一个新的 Stuff 用例
-func NewStuffUsecase(repo StuffRepo, logger log.Logger) *StuffUsecase {
-
-	userConn, err := grpc.Dial(
-		"discovery:///user-service",
-		grpc.WithDefaultServiceConfig(`{"loadBalancingPolicy": "round_robin"}`),
-		grpc.WithInsecure(),
-	)
-	if err != nil {
-		log.Fatalf("failed to connect user service: %v", err)
-	}
-
+func NewStuffUsecase(repo StuffRepo, logger log.Logger, rpcClient userpb.UserClient) *StuffUsecase {
 	return &StuffUsecase{
-		repo:       repo,
-		log:        log.NewHelper(logger),
-		userClient: userConn,
+		repo:          repo,
+		log:           log.NewHelper(logger),
+		UserRpcClient: rpcClient,
 	}
+}
+
+// rpc 获取用户信息
+func (uc *StuffUsecase) GetUserInfoRPC(ctx context.Context, id int64) (*userpb.GetUserReply, error) {
+	userResp, err := uc.UserRpcClient.GetUser(ctx, &userpb.GetUserRequest{
+		Id: strconv.FormatInt(id, 10),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	uc.log.WithContext(ctx).Infof("GetUserInfoRPC: %v", userResp)
+	return userResp, nil
 }
 
 // Create 创建新的 Stuff

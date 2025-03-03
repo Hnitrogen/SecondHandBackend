@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"os"
 	"time"
@@ -18,6 +19,8 @@ import (
 	"github.com/hashicorp/consul/api"
 
 	_ "go.uber.org/automaxprocs"
+
+	userpb "stuff/api/other/user/v1"
 )
 
 // go build -ldflags "-X main.Version=x.y.z"
@@ -82,6 +85,27 @@ func newApp(logger log.Logger, gs *grpc.Server, hs *http.Server) *kratos.App {
 	)
 }
 
+// UserRpcClient 连接依赖
+func createUserClient(logger log.Logger, client *api.Client) userpb.UserClient {
+	endpoint := "discovery:///userService"
+
+	// 创建 Consul 服务发现
+	dis := consul.New(client)
+
+	conn, err := grpc.DialInsecure(
+		context.Background(),
+		grpc.WithEndpoint(endpoint),
+		grpc.WithDiscovery(dis), // 添加 Consul 服务发现
+	)
+	if err != nil {
+		logger.Log(log.LevelError, "msg", "Failed to create gRPC connection", "error", err)
+		panic(err)
+	}
+
+	logger.Log(log.LevelInfo, "msg", "gRPC client initialized", "endpoint", endpoint)
+	return userpb.NewUserClient(conn)
+}
+
 func main() {
 	flag.Parse()
 	logger := log.With(log.NewStdLogger(os.Stdout),
@@ -109,13 +133,23 @@ func main() {
 		panic(err)
 	}
 
-	app, cleanup, err := wireApp(bc.Server, bc.Data, logger)
+	// 创建 Consul 客户端
+	consulClient, err := api.NewClient(api.DefaultConfig())
+	if err != nil {
+		panic(err)
+	}
+
+	// 创建 UserClient
+	userClient := createUserClient(logger, consulClient)
+
+	// 初始化应用
+	app, cleanup, err := wireApp(bc.Server, bc.Data, logger, userClient)
 	if err != nil {
 		panic(err)
 	}
 	defer cleanup()
 
-	// start and wait for stop signal
+	// 启动并等待停止信号
 	if err := app.Run(); err != nil {
 		panic(err)
 	}

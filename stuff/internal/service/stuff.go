@@ -52,7 +52,11 @@ func (s *StuffService) GetStuff(ctx context.Context, req *pb.GetStuffRequest) (*
 	}
 
 	stuff, err := s.uc.Get(ctx, id)
+	if err != nil {
+		return nil, err
+	}
 
+	userResp, err := s.uc.GetUserInfoRPC(ctx, stuff.Publisher)
 	if err != nil {
 		return nil, err
 	}
@@ -60,10 +64,10 @@ func (s *StuffService) GetStuff(ctx context.Context, req *pb.GetStuffRequest) (*
 	return &pb.GetStuffReply{
 		Id:   strconv.FormatInt(stuff.ID, 10),
 		Name: stuff.Name,
-		//Publisher: &pb.UserInfo{
-		//	Name:   userResp.Name,
-		//	Avatar: userResp.Avatar,
-		//},
+		Publisher: &pb.UserInfo{
+			Name:   userResp.Name,
+			Avatar: userResp.Avatar,
+		},
 		Category: stuff.Category,
 	}, nil
 }

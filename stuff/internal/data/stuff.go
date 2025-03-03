@@ -79,8 +79,15 @@ func (r *stuffRepo) Get(ctx context.Context, id int64) (*biz.Stuff, error) {
 		return nil, err
 	}
 	return &biz.Stuff{
-		ID:   id,
-		Name: stuff.Name,
+		ID:          stuff.ID,
+		Name:        stuff.Name,
+		Category:    stuff.Category,
+		Price:       stuff.Price,
+		Photos:      stuff.Photos,
+		Publisher:   stuff.Publisher,
+		Status:      stuff.Status,
+		Condition:   stuff.Condition,
+		Description: stuff.Description,
 	}, nil
 }
 
