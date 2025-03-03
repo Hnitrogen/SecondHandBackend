@@ -5,6 +5,7 @@ import (
 
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/shopspring/decimal"
+	"google.golang.org/grpc"
 )
 
 // Stuff 是业务实体
@@ -31,15 +32,27 @@ type StuffRepo interface {
 
 // StuffUsecase 是 Stuff 的业务用例
 type StuffUsecase struct {
-	repo StuffRepo
-	log  *log.Helper
+	repo       StuffRepo
+	log        *log.Helper
+	userClient *grpc.ClientConn
 }
 
 // NewStuffUsecase 创建一个新的 Stuff 用例
 func NewStuffUsecase(repo StuffRepo, logger log.Logger) *StuffUsecase {
+
+	userConn, err := grpc.Dial(
+		"discovery:///user-service",
+		grpc.WithDefaultServiceConfig(`{"loadBalancingPolicy": "round_robin"}`),
+		grpc.WithInsecure(),
+	)
+	if err != nil {
+		log.Fatalf("failed to connect user service: %v", err)
+	}
+
 	return &StuffUsecase{
-		repo: repo,
-		log:  log.NewHelper(logger),
+		repo:       repo,
+		log:        log.NewHelper(logger),
+		userClient: userConn,
 	}
 }
 

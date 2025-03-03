@@ -61,9 +61,21 @@ message DeleteStuffReply {}
 message GetStuffRequest {
 	string id = 1;
 }
+
+message UserInfo {
+	string name = 1;
+	string avatar = 2;
+}
+
 message GetStuffReply {
 	string id = 1;
 	string name = 2;
+	int64 category = 3;
+	float price = 4;
+	string photos = 5;
+	UserInfo publisher = 6;
+	string condition = 7;
+	string description = 8;
 }
 
 message ListStuffRequest {}

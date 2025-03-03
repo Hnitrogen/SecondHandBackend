@@ -154,7 +154,7 @@ components:
             properties:
                 name:
                     type: string
-                email:
+                avatar:
                     type: string
         GoogleProtobufAny:
             type: object

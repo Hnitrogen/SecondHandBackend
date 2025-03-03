@@ -16,3 +16,4 @@ data:
 
 media:
   base_url: http://localhost/media/
+  image_url: http://localhost/media/image/

@@ -16,7 +16,10 @@ type StuffService struct {
 }
 
 func NewStuffService(uc *biz.StuffUsecase) *StuffService {
-	return &StuffService{uc: uc}
+
+	return &StuffService{
+		uc: uc,
+	}
 }
 
 func (s *StuffService) CreateStuff(ctx context.Context, req *pb.CreateStuffRequest) (*pb.CreateStuffReply, error) {
@@ -47,13 +50,21 @@ func (s *StuffService) GetStuff(ctx context.Context, req *pb.GetStuffRequest) (*
 	if err != nil {
 		return nil, err
 	}
+
 	stuff, err := s.uc.Get(ctx, id)
+
 	if err != nil {
 		return nil, err
 	}
+
 	return &pb.GetStuffReply{
 		Id:   strconv.FormatInt(stuff.ID, 10),
 		Name: stuff.Name,
+		//Publisher: &pb.UserInfo{
+		//	Name:   userResp.Name,
+		//	Avatar: userResp.Avatar,
+		//},
+		Category: stuff.Category,
 	}, nil
 }
 

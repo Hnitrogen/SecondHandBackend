@@ -4,6 +4,7 @@ import (
 	"context"
 	"strconv"
 	"user/internal/biz"
+	"user/internal/conf"
 	"user/internal/data"
 
 	pb "user/api/user/v1"
@@ -11,11 +12,12 @@ import (
 
 type UserService struct {
 	pb.UnimplementedUserServer
-	uc *biz.UserUseCase
+	uc   *biz.UserUseCase
+	conf *conf.Media
 }
 
-func NewUserService(uc *biz.UserUseCase) *UserService {
-	return &UserService{uc: uc}
+func NewUserService(uc *biz.UserUseCase, conf *conf.Media) *UserService {
+	return &UserService{uc: uc, conf: conf}
 }
 
 func (s *UserService) CreateUser(ctx context.Context, req *pb.CreateUserRequest) (*pb.CreateUserReply, error) {
@@ -44,8 +46,8 @@ func (s *UserService) GetUser(ctx context.Context, req *pb.GetUserRequest) (*pb.
 	}
 
 	return &pb.GetUserReply{
-		Name:  user.Name,
-		Email: user.Email,
+		Name:   user.Name,
+		Avatar: s.conf.ImageUrl + user.Avatar,
 	}, nil
 }
 
@@ -61,7 +63,7 @@ func (s *UserService) UserLogin(ctx context.Context, req *pb.UserLoginRequest) (
 		Token:    resp["token"].(string),
 		Username: user.Name,
 		Email:    user.Email,
-		Avatar:   "http://localhost/media/image/" + user.Avatar, // TODO config inject
+		Avatar:   s.conf.ImageUrl + user.Avatar,
 		Role:     "",
 	}, nil
 }
