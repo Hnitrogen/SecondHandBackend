@@ -1,0 +1,71 @@
+syntax = "proto3";
+
+package api.stuff.v1;
+
+import "google/api/annotations.proto";
+
+option go_package = "stuff/api/stuff/v1;v1";
+option java_multiple_files = true;
+option java_package = "api.stuff.v1";
+
+service Stuff {
+	rpc CreateStuff (CreateStuffRequest) returns (CreateStuffReply) {
+		option (google.api.http) = {
+			post: "/v1/stuff/create"
+			body: "*"
+		};
+	};
+	rpc UpdateStuff (UpdateStuffRequest) returns (UpdateStuffReply) {
+		option (google.api.http) = {
+			put: "/v1/stuff/{id}"
+		};
+	};
+	rpc DeleteStuff (DeleteStuffRequest) returns (DeleteStuffReply) {
+		option (google.api.http) = {
+			delete: "/v1/stuff/{id}"
+		};
+	};
+	rpc GetStuff (GetStuffRequest) returns (GetStuffReply) {
+		option (google.api.http) = {
+			get: "/v1/stuff/{id}"
+		};
+	};
+	rpc ListStuff (ListStuffRequest) returns (ListStuffReply) {
+		option (google.api.http) = {
+			get: "/v1/stuff"
+		};
+	};
+}
+message CreateStuffRequest {
+	string name = 1;
+	int64 category = 2;
+	float  price = 3;
+	string photos = 4;
+	int64 publisher = 5;
+	string condition = 6;
+	string description = 7;
+}
+message CreateStuffReply {}
+
+message UpdateStuffRequest {
+	string id = 1;
+	string name = 2;
+}
+message UpdateStuffReply {}
+
+message DeleteStuffRequest {
+	string id = 1;
+}
+message DeleteStuffReply {}
+
+message GetStuffRequest {
+	string id = 1;
+}
+message GetStuffReply {
+	string id = 1;
+	string name = 2;
+}
+
+message ListStuffRequest {}
+message ListStuffReply {}
+

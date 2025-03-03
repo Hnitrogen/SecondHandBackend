@@ -1,0 +1,43 @@
+syntax = "proto3";
+
+package api.category.v1;
+
+import "google/api/annotations.proto";
+
+option go_package = "stuff/api/category/v1;v1";
+option java_multiple_files = true;
+option java_package = "api.category.v1";
+
+service Category {
+	rpc CreateCategory (CreateCategoryRequest) returns (CreateCategoryReply);
+	rpc UpdateCategory (UpdateCategoryRequest) returns (UpdateCategoryReply);
+	rpc DeleteCategory (DeleteCategoryRequest) returns (DeleteCategoryReply);
+	rpc GetCategory (GetCategoryRequest) returns (GetCategoryReply);
+	rpc ListCategory (ListCategoryRequest) returns (ListCategoryReply) {
+		option (google.api.http) = {
+			get: "/v1/stuff/category/list"
+		};
+	};
+}
+
+message CreateCategoryRequest {}
+message CreateCategoryReply {}
+
+message UpdateCategoryRequest {}
+message UpdateCategoryReply {}
+
+message DeleteCategoryRequest {}
+message DeleteCategoryReply {}
+
+message GetCategoryRequest {}
+message GetCategoryReply {}
+
+message CategoryWrapper {
+	string id = 1;
+	string name = 2;
+}
+
+message ListCategoryRequest {}
+message ListCategoryReply {
+	repeated CategoryWrapper category = 1;
+}
