@@ -6,19 +6,22 @@ import (
 
 	pb "stuff/api/stuff/v1"
 	"stuff/internal/biz"
+	"stuff/internal/conf"
 
 	"github.com/shopspring/decimal"
 )
 
 type StuffService struct {
 	pb.UnimplementedStuffServer
-	uc *biz.StuffUsecase
+	uc    *biz.StuffUsecase
+	media *conf.Media
 }
 
-func NewStuffService(uc *biz.StuffUsecase) *StuffService {
+func NewStuffService(uc *biz.StuffUsecase, conf *conf.Media) *StuffService {
 
 	return &StuffService{
-		uc: uc,
+		uc:    uc,
+		media: conf,
 	}
 }
 
@@ -61,17 +64,54 @@ func (s *StuffService) GetStuff(ctx context.Context, req *pb.GetStuffRequest) (*
 		return nil, err
 	}
 
+	price, _ := stuff.Price.Float64()
 	return &pb.GetStuffReply{
-		Id:   strconv.FormatInt(stuff.ID, 10),
-		Name: stuff.Name,
+		Id:          stuff.ID,
+		Name:        stuff.Name,
+		Description: stuff.Description,
 		Publisher: &pb.UserInfo{
-			Name:   userResp.Name,
-			Avatar: userResp.Avatar,
+			Name:    userResp.Name,
+			Avatar:  userResp.Avatar,
+			Address: userResp.Address,
 		},
-		Category: stuff.Category,
+		Category:  stuff.Category,
+		Price:     float32(price),
+		Photos:    s.media.ImageUrl + "stuff/" + stuff.Photos,
+		Condition: stuff.Condition,
 	}, nil
 }
 
 func (s *StuffService) ListStuff(ctx context.Context, req *pb.ListStuffRequest) (*pb.ListStuffReply, error) {
 	return &pb.ListStuffReply{}, nil
+}
+
+func (s *StuffService) ListStuffByCategory(ctx context.Context, req *pb.ListStuffByCategoryRequest) (*pb.ListStuffByCategoryReply, error) {
+	page := req.Page
+	pageSize := req.PageSize
+	category, _ := strconv.ParseInt(req.Category, 10, 64)
+
+	stuffs, err := s.uc.ListByCategory(ctx, category, page, pageSize)
+
+	for _, stuff := range stuffs.Stuffs {
+		stuff.Photos = s.media.ImageUrl + "stuff/" + stuff.Photos
+	}
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &stuffs, nil
+}
+
+func (s *StuffService) ListAllStuff(ctx context.Context, req *pb.ListAllStuffRequest) (*pb.ListAllStuffReply, error) {
+	stuffs, err := s.uc.ListAllByPage(ctx, req.Page, req.PageSize)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, stuff := range stuffs.Stuffs {
+		stuff.Photos = s.media.ImageUrl + "stuff/" + stuff.Photos
+	}
+
+	return &stuffs, nil
 }

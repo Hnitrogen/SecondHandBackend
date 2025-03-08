@@ -20,6 +20,23 @@ export const stuffApi = {
     },
     getStuffCategory() {
         return http.get('/stuff/category/list')
+    },
+    getStuffDetail(id: string) {
+        return http.get(`/stuff/${id}`)
+    },
+    getStuffList(data: {
+        category: string;
+        page: number;
+        pageSize: number;
+    }) {
+        return http.post('/stuff/category', data)
+    },
+    getStuffListAll(data: {
+        category: string;
+        page: number;
+        pageSize: number;
+    }) {
+        return http.post('/stuff/all', data)
     }
 }
 

@@ -75,3 +75,13 @@ func (uc *UserUseCase) UserLogin(ctx context.Context, email string, password str
 		}, nil
 	}
 }
+
+func (uc *UserUseCase) UpdateUserAvatar(ctx context.Context, user *data.User) error {
+
+	oldUser, err := uc.repo.GetUser(ctx, user.ID)
+	if err != nil {
+		return err
+	}
+	oldUser.Avatar = user.Avatar
+	return uc.repo.UpdateUserAvatar(ctx, oldUser)
+}

@@ -14,6 +14,8 @@ type User struct {
 	Email    string
 	Password string
 	Avatar   string
+	Address  string
+	Phone    string
 }
 
 type UserRepo interface {
@@ -22,6 +24,7 @@ type UserRepo interface {
 	UpdateUser(ctx context.Context, user *User) error
 	DeleteUser(ctx context.Context, id uint) error
 	GetUserByEmail(ctx context.Context, email string) (*User, error)
+	UpdateUserAvatar(ctx context.Context, user *User) error
 }
 
 type userRepo struct {
@@ -49,7 +52,18 @@ func (r *userRepo) GetUser(ctx context.Context, id uint) (*User, error) {
 }
 
 func (r *userRepo) UpdateUser(ctx context.Context, user *User) error {
-	return r.data.db.WithContext(ctx).Save(user).Error
+	// select user by id
+	var oldUser User
+	if err := r.data.db.WithContext(ctx).Where("id = ?", user.ID).First(&oldUser).Error; err != nil {
+		return err
+	}
+
+	// update user
+	oldUser.Name = user.Name
+	oldUser.Address = user.Address
+	oldUser.Phone = user.Phone
+
+	return r.data.db.WithContext(ctx).Save(&oldUser).Error
 }
 
 func (r *userRepo) DeleteUser(ctx context.Context, id uint) error {
@@ -62,4 +76,11 @@ func (r *userRepo) GetUserByEmail(ctx context.Context, email string) (*User, err
 		return nil, err
 	}
 	return user, nil
+}
+
+func (r *userRepo) UpdateUserAvatar(ctx context.Context, user *User) error {
+	log.Info("UpdateUserAvatar: %v", user.Avatar)
+	return r.data.db.WithContext(ctx).Model(&User{}).
+		Where("id = ?", user.ID).
+		Update("avatar", user.Avatar).Error
 }

@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"strconv"
 	"user/internal/biz"
 	"user/internal/conf"
 	"user/internal/data"
@@ -32,22 +31,36 @@ func (s *UserService) CreateUser(ctx context.Context, req *pb.CreateUserRequest)
 	}
 	return &pb.CreateUserReply{Response: "success"}, nil
 }
+
+// 更新用户信息
 func (s *UserService) UpdateUser(ctx context.Context, req *pb.UpdateUserRequest) (*pb.UpdateUserReply, error) {
-	return &pb.UpdateUserReply{}, nil
+	user := &data.User{
+		ID:      uint(req.Id),
+		Name:    req.Name,
+		Address: req.Address,
+		Phone:   req.Phone,
+	}
+	err := s.uc.UpdateUser(ctx, user)
+	if err != nil {
+		return nil, err
+	}
+	return &pb.UpdateUserReply{Response: "success"}, nil
 }
+
 func (s *UserService) DeleteUser(ctx context.Context, req *pb.DeleteUserRequest) (*pb.DeleteUserReply, error) {
 	return &pb.DeleteUserReply{}, nil
 }
 func (s *UserService) GetUser(ctx context.Context, req *pb.GetUserRequest) (*pb.GetUserReply, error) {
-	userId, _ := strconv.ParseUint(req.Id, 10, 64)
-	user, err := s.uc.GetUser(ctx, uint(userId))
+	userId := uint(req.Id)
+	user, err := s.uc.GetUser(ctx, userId)
 	if err != nil {
 		return nil, err
 	}
 
 	return &pb.GetUserReply{
-		Name:   user.Name,
-		Avatar: s.conf.ImageUrl + user.Avatar,
+		Name:    user.Name,
+		Avatar:  s.conf.ImageUrl + user.Avatar,
+		Address: user.Address,
 	}, nil
 }
 
@@ -64,6 +77,21 @@ func (s *UserService) UserLogin(ctx context.Context, req *pb.UserLoginRequest) (
 		Username: user.Name,
 		Email:    user.Email,
 		Avatar:   s.conf.ImageUrl + user.Avatar,
-		Role:     "",
+		Address:  user.Address,
+		Phone:    user.Phone,
+		Id:       int64(user.ID),
 	}, nil
+}
+
+func (s *UserService) UpdateUserAvatar(ctx context.Context, req *pb.UpdateUserAvatarRequest) (*pb.UpdateUserAvatarReply, error) {
+	user := &data.User{
+		ID:     uint(req.Id),
+		Avatar: req.Avatar,
+	}
+	err := s.uc.UpdateUserAvatar(ctx, user)
+
+	if err != nil {
+		return &pb.UpdateUserAvatarReply{Response: "failed"}, nil
+	}
+	return &pb.UpdateUserAvatarReply{Response: "success"}, nil
 }

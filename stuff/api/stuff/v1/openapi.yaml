@@ -3,62 +3,56 @@
 
 openapi: 3.0.3
 info:
-    title: User API
+    title: Stuff API
     version: 0.0.1
 paths:
-    /v1/user/login:
-        post:
-            tags:
-                - User
-            operationId: User_UserLogin
-            requestBody:
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/UserLoginRequest'
-                required: true
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/UserLoginReply'
-                default:
-                    description: Default error response
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Status'
-    /v1/user/register:
-        post:
-            tags:
-                - User
-            operationId: User_CreateUser
-            requestBody:
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/CreateUserRequest'
-                required: true
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/CreateUserReply'
-                default:
-                    description: Default error response
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Status'
-    /v1/user/{id}:
+    /v1/stuff:
         get:
             tags:
-                - User
-            operationId: User_GetUser
+                - Stuff
+            operationId: Stuff_ListStuff
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ListStuffReply'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /v1/stuff/create:
+        post:
+            tags:
+                - Stuff
+            operationId: Stuff_CreateStuff
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/CreateStuffRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/CreateStuffReply'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /v1/stuff/{id}:
+        get:
+            tags:
+                - Stuff
+            operationId: Stuff_GetStuff
             parameters:
                 - name: id
                   in: path
@@ -71,7 +65,7 @@ paths:
                     content:
                         application/json:
                             schema:
-                                $ref: '#/components/schemas/GetUserReply'
+                                $ref: '#/components/schemas/GetStuffReply'
                 default:
                     description: Default error response
                     content:
@@ -80,27 +74,25 @@ paths:
                                 $ref: '#/components/schemas/Status'
         put:
             tags:
-                - User
-            operationId: User_UpdateUser
+                - Stuff
+            operationId: Stuff_UpdateStuff
             parameters:
                 - name: id
                   in: path
                   required: true
                   schema:
                     type: string
-            requestBody:
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/UpdateUserRequest'
-                required: true
+                - name: name
+                  in: query
+                  schema:
+                    type: string
             responses:
                 "200":
                     description: OK
                     content:
                         application/json:
                             schema:
-                                $ref: '#/components/schemas/UpdateUserReply'
+                                $ref: '#/components/schemas/UpdateStuffReply'
                 default:
                     description: Default error response
                     content:
@@ -109,8 +101,8 @@ paths:
                                 $ref: '#/components/schemas/Status'
         delete:
             tags:
-                - User
-            operationId: User_DeleteUser
+                - Stuff
+            operationId: Stuff_DeleteStuff
             parameters:
                 - name: id
                   in: path
@@ -123,37 +115,7 @@ paths:
                     content:
                         application/json:
                             schema:
-                                $ref: '#/components/schemas/DeleteUserReply'
-                default:
-                    description: Default error response
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Status'
-    /v1/user/{id}/avatar:
-        put:
-            tags:
-                - User
-            operationId: User_UpdateUserAvatar
-            parameters:
-                - name: id
-                  in: path
-                  required: true
-                  schema:
-                    type: string
-            requestBody:
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/UpdateUserAvatarRequest'
-                required: true
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/UpdateUserAvatarReply'
+                                $ref: '#/components/schemas/DeleteStuffReply'
                 default:
                     description: Default error response
                     content:
@@ -162,31 +124,49 @@ paths:
                                 $ref: '#/components/schemas/Status'
 components:
     schemas:
-        CreateUserReply:
-            type: object
-            properties:
-                response:
-                    type: string
-        CreateUserRequest:
-            type: object
-            properties:
-                name:
-                    type: string
-                email:
-                    type: string
-                password:
-                    type: string
-        DeleteUserReply:
+        CreateStuffReply:
             type: object
             properties: {}
-        GetUserReply:
+        CreateStuffRequest:
             type: object
             properties:
                 name:
                     type: string
-                avatar:
+                category:
                     type: string
-                address:
+                price:
+                    type: number
+                    format: float
+                photos:
+                    type: string
+                publisher:
+                    type: string
+                condition:
+                    type: string
+                description:
+                    type: string
+        DeleteStuffReply:
+            type: object
+            properties: {}
+        GetStuffReply:
+            type: object
+            properties:
+                id:
+                    type: string
+                name:
+                    type: string
+                category:
+                    type: string
+                price:
+                    type: number
+                    format: float
+                photos:
+                    type: string
+                publisher:
+                    $ref: '#/components/schemas/UserInfo'
+                condition:
+                    type: string
+                description:
                     type: string
         GoogleProtobufAny:
             type: object
@@ -196,6 +176,9 @@ components:
                     description: The type of the serialized message.
             additionalProperties: true
             description: Contains an arbitrary serialized message along with a @type that describes the type of the serialized message.
+        ListStuffReply:
+            type: object
+            properties: {}
         Status:
             type: object
             properties:
@@ -212,59 +195,15 @@ components:
                         $ref: '#/components/schemas/GoogleProtobufAny'
                     description: A list of messages that carry the error details.  There is a common set of message types for APIs to use.
             description: 'The `Status` type defines a logical error model that is suitable for different programming environments, including REST APIs and RPC APIs. It is used by [gRPC](https://github.com/grpc). Each `Status` message contains three pieces of data: error code, error message, and error details. You can find out more about this error model and how to work with it in the [API Design Guide](https://cloud.google.com/apis/design/errors).'
-        UpdateUserAvatarReply:
+        UpdateStuffReply:
+            type: object
+            properties: {}
+        UserInfo:
             type: object
             properties:
-                response:
-                    type: string
-        UpdateUserAvatarRequest:
-            type: object
-            properties:
-                id:
-                    type: string
-                avatar:
-                    type: string
-        UpdateUserReply:
-            type: object
-            properties:
-                response:
-                    type: string
-        UpdateUserRequest:
-            type: object
-            properties:
-                id:
-                    type: string
                 name:
                     type: string
-                address:
-                    type: string
-                phone:
-                    type: string
-        UserLoginReply:
-            type: object
-            properties:
-                token:
-                    type: string
-                username:
-                    type: string
-                email:
-                    type: string
                 avatar:
                     type: string
-                role:
-                    type: string
-                address:
-                    type: string
-                phone:
-                    type: string
-                id:
-                    type: string
-        UserLoginRequest:
-            type: object
-            properties:
-                email:
-                    type: string
-                password:
-                    type: string
 tags:
-    - name: User
+    - name: Stuff

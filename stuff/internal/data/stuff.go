@@ -2,7 +2,7 @@ package data
 
 import (
 	"context"
-	"strconv"
+	"math"
 	v1 "stuff/api/stuff/v1"
 	"stuff/internal/biz"
 
@@ -111,7 +111,86 @@ func (r *stuffRepo) List(ctx context.Context) ([]*biz.Stuff, error) {
 // ConvertToProto 将数据库模型转换为proto消息
 func (s *Stuff) ConvertToProto() *v1.GetStuffReply {
 	return &v1.GetStuffReply{
-		Id:   strconv.FormatInt(s.ID, 10),
+		Id:   s.ID,
 		Name: s.Name,
 	}
+}
+
+// ListByCategory 实现 biz.StuffRepo 接口
+func (r *stuffRepo) ListByCategory(ctx context.Context, category int64, page int64, pageSize int64) ([]*biz.Stuff, error) {
+	var stuffs []*Stuff
+
+	offset := (page - 1) * pageSize // 先计算偏移量，避免类型转换问题
+	r.log.WithContext(ctx).Infof("ListByCategory - offset: %v, page: %v, pageSize: %v", offset, page, pageSize)
+
+	if err := r.data.db.WithContext(ctx).
+		Where("category = ?", category).
+		Offset(int(offset)). // 使用计算好的 offset
+		Limit(int(pageSize)).
+		Find(&stuffs).Error; err != nil {
+		r.log.WithContext(ctx).Errorf("ListByCategory: %v", err)
+		return nil, err
+	}
+
+	result := make([]*biz.Stuff, 0, len(stuffs))
+	for _, s := range stuffs {
+		result = append(result, &biz.Stuff{
+			ID:          s.ID,
+			Name:        s.Name,
+			Category:    s.Category,
+			Price:       s.Price,
+			Photos:      s.Photos,
+			Publisher:   s.Publisher,
+			Status:      s.Status,
+			Condition:   s.Condition,
+			Description: s.Description,
+		})
+	}
+	return result, nil
+}
+
+func (r *stuffRepo) GetTotalByCategory(ctx context.Context, category int64) int64 {
+	var total int64
+	r.data.db.WithContext(ctx).Model(&Stuff{}).Where("category = ?", category).Count(&total)
+	return total
+}
+
+func (r *stuffRepo) GetPageCountByCategory(ctx context.Context, category int64, pageSize int64) int64 {
+	var total int64
+	r.data.db.WithContext(ctx).Model(&Stuff{}).Where("category = ?", category).Count(&total)
+
+	return int64(math.Ceil(float64(total) / float64(pageSize)))
+}
+
+func (r *stuffRepo) ListAllByPage(ctx context.Context, page int64, pageSize int64) ([]*biz.Stuff, error) {
+	var stuffs []*Stuff
+	offset := (page - 1) * pageSize
+	if err := r.data.db.WithContext(ctx).
+		Offset(int(offset)).
+		Limit(int(pageSize)).
+		Find(&stuffs).Error; err != nil {
+		return nil, err
+	}
+
+	result := make([]*biz.Stuff, 0, len(stuffs))
+	for _, s := range stuffs {
+		result = append(result, &biz.Stuff{
+			ID:          s.ID,
+			Name:        s.Name,
+			Category:    s.Category,
+			Price:       s.Price,
+			Photos:      s.Photos,
+			Publisher:   s.Publisher,
+			Status:      s.Status,
+			Condition:   s.Condition,
+			Description: s.Description,
+		})
+	}
+	return result, nil
+}
+
+func (r *stuffRepo) GetTotal(ctx context.Context) int64 {
+	var total int64
+	r.data.db.WithContext(ctx).Model(&Stuff{}).Count(&total)
+	return total
 }

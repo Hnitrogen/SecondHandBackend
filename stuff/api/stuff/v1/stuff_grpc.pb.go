@@ -19,11 +19,13 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	Stuff_CreateStuff_FullMethodName = "/api.stuff.v1.Stuff/CreateStuff"
-	Stuff_UpdateStuff_FullMethodName = "/api.stuff.v1.Stuff/UpdateStuff"
-	Stuff_DeleteStuff_FullMethodName = "/api.stuff.v1.Stuff/DeleteStuff"
-	Stuff_GetStuff_FullMethodName    = "/api.stuff.v1.Stuff/GetStuff"
-	Stuff_ListStuff_FullMethodName   = "/api.stuff.v1.Stuff/ListStuff"
+	Stuff_CreateStuff_FullMethodName         = "/api.stuff.v1.Stuff/CreateStuff"
+	Stuff_UpdateStuff_FullMethodName         = "/api.stuff.v1.Stuff/UpdateStuff"
+	Stuff_DeleteStuff_FullMethodName         = "/api.stuff.v1.Stuff/DeleteStuff"
+	Stuff_GetStuff_FullMethodName            = "/api.stuff.v1.Stuff/GetStuff"
+	Stuff_ListStuff_FullMethodName           = "/api.stuff.v1.Stuff/ListStuff"
+	Stuff_ListStuffByCategory_FullMethodName = "/api.stuff.v1.Stuff/ListStuffByCategory"
+	Stuff_ListAllStuff_FullMethodName        = "/api.stuff.v1.Stuff/ListAllStuff"
 )
 
 // StuffClient is the client API for Stuff service.
@@ -35,6 +37,8 @@ type StuffClient interface {
 	DeleteStuff(ctx context.Context, in *DeleteStuffRequest, opts ...grpc.CallOption) (*DeleteStuffReply, error)
 	GetStuff(ctx context.Context, in *GetStuffRequest, opts ...grpc.CallOption) (*GetStuffReply, error)
 	ListStuff(ctx context.Context, in *ListStuffRequest, opts ...grpc.CallOption) (*ListStuffReply, error)
+	ListStuffByCategory(ctx context.Context, in *ListStuffByCategoryRequest, opts ...grpc.CallOption) (*ListStuffByCategoryReply, error)
+	ListAllStuff(ctx context.Context, in *ListAllStuffRequest, opts ...grpc.CallOption) (*ListAllStuffReply, error)
 }
 
 type stuffClient struct {
@@ -95,6 +99,26 @@ func (c *stuffClient) ListStuff(ctx context.Context, in *ListStuffRequest, opts 
 	return out, nil
 }
 
+func (c *stuffClient) ListStuffByCategory(ctx context.Context, in *ListStuffByCategoryRequest, opts ...grpc.CallOption) (*ListStuffByCategoryReply, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListStuffByCategoryReply)
+	err := c.cc.Invoke(ctx, Stuff_ListStuffByCategory_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *stuffClient) ListAllStuff(ctx context.Context, in *ListAllStuffRequest, opts ...grpc.CallOption) (*ListAllStuffReply, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListAllStuffReply)
+	err := c.cc.Invoke(ctx, Stuff_ListAllStuff_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // StuffServer is the server API for Stuff service.
 // All implementations must embed UnimplementedStuffServer
 // for forward compatibility.
@@ -104,6 +128,8 @@ type StuffServer interface {
 	DeleteStuff(context.Context, *DeleteStuffRequest) (*DeleteStuffReply, error)
 	GetStuff(context.Context, *GetStuffRequest) (*GetStuffReply, error)
 	ListStuff(context.Context, *ListStuffRequest) (*ListStuffReply, error)
+	ListStuffByCategory(context.Context, *ListStuffByCategoryRequest) (*ListStuffByCategoryReply, error)
+	ListAllStuff(context.Context, *ListAllStuffRequest) (*ListAllStuffReply, error)
 	mustEmbedUnimplementedStuffServer()
 }
 
@@ -128,6 +154,12 @@ func (UnimplementedStuffServer) GetStuff(context.Context, *GetStuffRequest) (*Ge
 }
 func (UnimplementedStuffServer) ListStuff(context.Context, *ListStuffRequest) (*ListStuffReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListStuff not implemented")
+}
+func (UnimplementedStuffServer) ListStuffByCategory(context.Context, *ListStuffByCategoryRequest) (*ListStuffByCategoryReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListStuffByCategory not implemented")
+}
+func (UnimplementedStuffServer) ListAllStuff(context.Context, *ListAllStuffRequest) (*ListAllStuffReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListAllStuff not implemented")
 }
 func (UnimplementedStuffServer) mustEmbedUnimplementedStuffServer() {}
 func (UnimplementedStuffServer) testEmbeddedByValue()               {}
@@ -240,6 +272,42 @@ func _Stuff_ListStuff_Handler(srv interface{}, ctx context.Context, dec func(int
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Stuff_ListStuffByCategory_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListStuffByCategoryRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(StuffServer).ListStuffByCategory(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Stuff_ListStuffByCategory_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(StuffServer).ListStuffByCategory(ctx, req.(*ListStuffByCategoryRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Stuff_ListAllStuff_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListAllStuffRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(StuffServer).ListAllStuff(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Stuff_ListAllStuff_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(StuffServer).ListAllStuff(ctx, req.(*ListAllStuffRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Stuff_ServiceDesc is the grpc.ServiceDesc for Stuff service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -266,6 +334,14 @@ var Stuff_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ListStuff",
 			Handler:    _Stuff_ListStuff_Handler,
+		},
+		{
+			MethodName: "ListStuffByCategory",
+			Handler:    _Stuff_ListStuffByCategory_Handler,
+		},
+		{
+			MethodName: "ListAllStuff",
+			Handler:    _Stuff_ListAllStuff_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

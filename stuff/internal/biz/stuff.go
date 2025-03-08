@@ -2,12 +2,13 @@ package biz
 
 import (
 	"context"
-	"strconv"
+	"math"
 
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/shopspring/decimal"
 
 	userpb "stuff/api/other/user/v1"
+	pb "stuff/api/stuff/v1"
 )
 
 // Stuff 是业务实体
@@ -30,6 +31,11 @@ type StuffRepo interface {
 	Delete(context.Context, int64) error
 	Get(context.Context, int64) (*Stuff, error)
 	List(context.Context) ([]*Stuff, error)
+	ListByCategory(context.Context, int64, int64, int64) ([]*Stuff, error)
+	GetTotalByCategory(context.Context, int64) int64
+	GetPageCountByCategory(context.Context, int64, int64) int64
+	ListAllByPage(context.Context, int64, int64) ([]*Stuff, error)
+	GetTotal(context.Context) int64
 }
 
 // StuffUsecase 是 Stuff 的业务用例
@@ -51,7 +57,7 @@ func NewStuffUsecase(repo StuffRepo, logger log.Logger, rpcClient userpb.UserCli
 // rpc 获取用户信息
 func (uc *StuffUsecase) GetUserInfoRPC(ctx context.Context, id int64) (*userpb.GetUserReply, error) {
 	userResp, err := uc.UserRpcClient.GetUser(ctx, &userpb.GetUserRequest{
-		Id: strconv.FormatInt(id, 10),
+		Id: id,
 	})
 	if err != nil {
 		return nil, err
@@ -91,4 +97,85 @@ func (uc *StuffUsecase) Get(ctx context.Context, id int64) (*Stuff, error) {
 func (uc *StuffUsecase) List(ctx context.Context) ([]*Stuff, error) {
 	uc.log.WithContext(ctx).Info("List Stuff")
 	return uc.repo.List(ctx)
+}
+
+// ListByCategory 获取指定分类的 Stuff 列表
+func (uc *StuffUsecase) ListByCategory(ctx context.Context, category int64, page int64, pageSize int64) (pb.ListStuffByCategoryReply, error) {
+	uc.log.WithContext(ctx).Infof("List Stuff By Category: %v", category)
+	stuffs, err := uc.repo.ListByCategory(ctx, category, page, pageSize)
+	if err != nil {
+		return pb.ListStuffByCategoryReply{}, err
+	}
+
+	result := make([]*pb.StuffWrapper, 0, len(stuffs))
+	// Rpc 获取用户信息
+	for _, s := range stuffs {
+		userResp, err := uc.GetUserInfoRPC(ctx, s.Publisher)
+		if err != nil {
+			uc.log.WithContext(ctx).Errorf("GetUserInfoRPC: %v", err)
+			return pb.ListStuffByCategoryReply{}, err
+		}
+		decPrice, _ := s.Price.Float64()
+		result = append(result, &pb.StuffWrapper{
+			Id:     s.ID,
+			Name:   s.Name,
+			Price:  float32(decPrice),
+			Photos: s.Photos,
+			Publisher: &pb.UserInfo{
+				Name:   userResp.Name,
+				Avatar: userResp.Avatar,
+			},
+			Condition: s.Condition,
+		})
+	}
+
+	response := &pb.ListStuffByCategoryReply{
+		Stuffs:    result,
+		Page:      page,
+		PageSize:  pageSize,
+		Total:     uc.repo.GetTotalByCategory(ctx, category),
+		TotalPage: uc.repo.GetPageCountByCategory(ctx, category, pageSize),
+	}
+
+	return *response, nil
+}
+
+func (uc *StuffUsecase) ListAllByPage(ctx context.Context, page int64, pageSize int64) (pb.ListAllStuffReply, error) {
+	uc.log.WithContext(ctx).Info("List All Stuff By Page")
+	stuffs, err := uc.repo.ListAllByPage(ctx, page, pageSize)
+	if err != nil {
+		return pb.ListAllStuffReply{}, err
+	}
+
+	result := make([]*pb.StuffWrapper, 0, len(stuffs))
+	for _, s := range stuffs {
+		userResp, err := uc.GetUserInfoRPC(ctx, s.Publisher)
+		if err != nil {
+			uc.log.WithContext(ctx).Errorf("GetUserInfoRPC: %v", err)
+			return pb.ListAllStuffReply{}, err
+		}
+
+		decPrice, _ := s.Price.Float64()
+		result = append(result, &pb.StuffWrapper{
+			Id:     s.ID,
+			Name:   s.Name,
+			Price:  float32(decPrice),
+			Photos: s.Photos,
+			Publisher: &pb.UserInfo{
+				Name:   userResp.Name,
+				Avatar: userResp.Avatar,
+			},
+			Condition: s.Condition,
+		})
+	}
+
+	total := uc.repo.GetTotal(ctx)
+	totalPage := math.Ceil(float64(total) / float64(pageSize))
+	return pb.ListAllStuffReply{
+		Stuffs:    result,
+		Page:      page,
+		PageSize:  pageSize,
+		Total:     total,
+		TotalPage: int64(totalPage),
+	}, nil
 }

@@ -94,6 +94,7 @@ const handleLogin = async () => {
                     localStorage.setItem('token', res.token)
                     // userStore
                     userStore.setLoginState(res)
+                    console.log(res)
                     router.push('/') // 登录成功后跳转到首页
                 })
             }

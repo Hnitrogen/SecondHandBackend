@@ -24,14 +24,14 @@ import (
 // Injectors from wire.go:
 
 // wireApp init kratos application.
-func wireApp(confServer *conf.Server, confData *conf.Data, logger log.Logger, userClient v1.UserClient) (*kratos.App, func(), error) {
+func wireApp(confServer *conf.Server, confData *conf.Data, media *conf.Media, logger log.Logger, userClient v1.UserClient) (*kratos.App, func(), error) {
 	dataData, cleanup, err := data.NewData(confData, logger, userClient)
 	if err != nil {
 		return nil, nil, err
 	}
 	stuffRepo := data.NewStuffRepo(dataData, logger)
 	stuffUsecase := biz.NewStuffUsecase(stuffRepo, logger, userClient)
-	stuffService := service.NewStuffService(stuffUsecase)
+	stuffService := service.NewStuffService(stuffUsecase, media)
 	grpcServer := server.NewGRPCServer(confServer, stuffService, logger)
 	categoryRepo := data.NewCategoryRepo(dataData, logger)
 	categoryUsecase := biz.NewCategoryUsecase(categoryRepo, logger)

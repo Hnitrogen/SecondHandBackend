@@ -30,8 +30,13 @@ export const userApi = {
     },
 
     // 用户信息
-    updateUserInfo(userId: number, data: { username: string; email: string; avatar: string }) {
-        return http.put(`/users/${userId}`, data)
+    updateUserInfo(data: { id: number; name: string; address: string; phone: string }) {
+        return http.put(`/user/${data.id}`, data)
+    },
+
+    // 更新头像
+    updateUserAvatar(data: { id: number; avatar: string }) {
+        return http.put(`/user/${data.id}/avatar`, data)
     }
 }
 

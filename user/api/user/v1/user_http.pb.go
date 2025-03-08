@@ -23,6 +23,7 @@ const OperationUserCreateUser = "/api.user.v1.User/CreateUser"
 const OperationUserDeleteUser = "/api.user.v1.User/DeleteUser"
 const OperationUserGetUser = "/api.user.v1.User/GetUser"
 const OperationUserUpdateUser = "/api.user.v1.User/UpdateUser"
+const OperationUserUpdateUserAvatar = "/api.user.v1.User/UpdateUserAvatar"
 const OperationUserUserLogin = "/api.user.v1.User/UserLogin"
 
 type UserHTTPServer interface {
@@ -30,6 +31,7 @@ type UserHTTPServer interface {
 	DeleteUser(context.Context, *DeleteUserRequest) (*DeleteUserReply, error)
 	GetUser(context.Context, *GetUserRequest) (*GetUserReply, error)
 	UpdateUser(context.Context, *UpdateUserRequest) (*UpdateUserReply, error)
+	UpdateUserAvatar(context.Context, *UpdateUserAvatarRequest) (*UpdateUserAvatarReply, error)
 	UserLogin(context.Context, *UserLoginRequest) (*UserLoginReply, error)
 }
 
@@ -37,6 +39,7 @@ func RegisterUserHTTPServer(s *http.Server, srv UserHTTPServer) {
 	r := s.Route("/")
 	r.POST("/v1/user/register", _User_CreateUser0_HTTP_Handler(srv))
 	r.PUT("/v1/user/{id}", _User_UpdateUser0_HTTP_Handler(srv))
+	r.PUT("/v1/user/{id}/avatar", _User_UpdateUserAvatar0_HTTP_Handler(srv))
 	r.DELETE("/v1/user/{id}", _User_DeleteUser0_HTTP_Handler(srv))
 	r.GET("/v1/user/{id}", _User_GetUser0_HTTP_Handler(srv))
 	r.POST("/v1/user/login", _User_UserLogin0_HTTP_Handler(srv))
@@ -85,6 +88,31 @@ func _User_UpdateUser0_HTTP_Handler(srv UserHTTPServer) func(ctx http.Context) e
 			return err
 		}
 		reply := out.(*UpdateUserReply)
+		return ctx.Result(200, reply)
+	}
+}
+
+func _User_UpdateUserAvatar0_HTTP_Handler(srv UserHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in UpdateUserAvatarRequest
+		if err := ctx.Bind(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindVars(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationUserUpdateUserAvatar)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.UpdateUserAvatar(ctx, req.(*UpdateUserAvatarRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*UpdateUserAvatarReply)
 		return ctx.Result(200, reply)
 	}
 }
@@ -160,6 +188,7 @@ type UserHTTPClient interface {
 	DeleteUser(ctx context.Context, req *DeleteUserRequest, opts ...http.CallOption) (rsp *DeleteUserReply, err error)
 	GetUser(ctx context.Context, req *GetUserRequest, opts ...http.CallOption) (rsp *GetUserReply, err error)
 	UpdateUser(ctx context.Context, req *UpdateUserRequest, opts ...http.CallOption) (rsp *UpdateUserReply, err error)
+	UpdateUserAvatar(ctx context.Context, req *UpdateUserAvatarRequest, opts ...http.CallOption) (rsp *UpdateUserAvatarReply, err error)
 	UserLogin(ctx context.Context, req *UserLoginRequest, opts ...http.CallOption) (rsp *UserLoginReply, err error)
 }
 
@@ -215,6 +244,19 @@ func (c *UserHTTPClientImpl) UpdateUser(ctx context.Context, in *UpdateUserReque
 	pattern := "/v1/user/{id}"
 	path := binding.EncodeURL(pattern, in, false)
 	opts = append(opts, http.Operation(OperationUserUpdateUser))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "PUT", path, in, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+func (c *UserHTTPClientImpl) UpdateUserAvatar(ctx context.Context, in *UpdateUserAvatarRequest, opts ...http.CallOption) (*UpdateUserAvatarReply, error) {
+	var out UpdateUserAvatarReply
+	pattern := "/v1/user/{id}/avatar"
+	path := binding.EncodeURL(pattern, in, false)
+	opts = append(opts, http.Operation(OperationUserUpdateUserAvatar))
 	opts = append(opts, http.PathTemplate(pattern))
 	err := c.cc.Invoke(ctx, "PUT", path, in, &out, opts...)
 	if err != nil {

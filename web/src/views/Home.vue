@@ -1,16 +1,14 @@
 <template>
     <div class="app">
         <Navbar />
-        <div class="main-content">
+        <div class="main-content" style="margin-top: 80px;">
             <div class="category-tabs">
-                <el-tabs v-model="activeCategory" class="demo-tabs">
-                    <el-tab-pane label="数码产品" name="digital" />
-                    <el-tab-pane label="书籍" name="books" />
-                    <el-tab-pane label="服装" name="clothing" />
-                    <el-tab-pane label="其他" name="others" />
+                <el-tabs v-for="category in categoryList" v-model="activeCategory" class="demo-tabs" @click="getProductsJudgement">
+                    <el-tab-pane :label="category.name" :name="category.id" />
                 </el-tabs>
             </div>
 
+            <!-- Item组件 -->
             <div class="products-grid">
                 <el-card 
                     v-for="product in products" 
@@ -18,58 +16,114 @@
                     class="product-card"
                     @click="navigateToDetail(product.id)"
                 >
-                    <img :src="product.image" class="product-image" />
+                    <img :src="product.photos" class="product-image" />
                     <div class="product-info">
                         <div class="product-price">¥{{ product.price }}</div>
-                        <div class="product-title">{{ product.title }}</div>
+                        <div class="product-title">{{ product.name }}</div>
                         <div class="product-meta">
                             <span class="seller-info">
-                                <el-avatar :size="20" :src="product.sellerAvatar" />
-                                {{ product.sellerName }}
+                                <el-avatar :size="20" :src="product.publisher.avatar" />
+                                {{ product.publisher.name }}
                             </span>
-                            <span class="location">{{ product.location }}</span>
+                            <span style="color: darkblue; font-size: 12px;">{{ product.condition }}</span>
                         </div>
                     </div>
                 </el-card>
             </div>
+            
+            <!-- 添加分页组件 -->
+            <div class="pagination-container">
+                <el-pagination
+                    v-model:current-page="currentPage"
+                    v-model:page-size="pageSize"
+                    :page-sizes="[10]"
+                    :total="total"
+                    @size-change="handleSizeChange"
+                    @current-change="handleCurrentChange"
+                    layout="total, sizes, prev, pager, next"
+                />
+            </div>
         </div>
     </div>
+
+
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import Navbar from '../components/Navbar.vue'
-
+import Navbar from '../components/NavBar.vue'
+import { stuffApi } from '@/api/stuff'
 const router = useRouter()
 const activeCategory = ref('all')
-
-// 模拟数据
-const products = ref([
-    {
-        id: 1,
-        title: '二手iPhone 12 Pro Max',
-        price: 4999,
-        image: 'path/to/image.jpg',
-        sellerName: '用户_54989905',
-        sellerAvatar: 'path/to/avatar.jpg',
-        location: '厦门',
-    },
-    {
-        id: 2,
-        title: '二手iPhone 12 Pro Max',
-        price: 4999,
-        image: 'path/to/image.jpg',
-        sellerName: '用户_54989905',
-        sellerAvatar: 'path/to/avatar.jpg',
-        location: '厦门',
-    },
-
+const currentPage = ref(1)
+const pageSize = ref(10)
+const total = ref(0)
+const categoryList = ref([
+    {name:'全部',id:'all'}
 ])
 
+// taglist
+stuffApi.getStuffCategory().then((res:any) =>{
+    categoryList.value = res.category
+    categoryList.value.unshift({name:'全部',id:'all'})
+})  
+
+
+const products = ref([])
+
 const navigateToDetail = (productId: number) => {
-    router.push(`/product/${productId}`)
+    router.push(`/product-detail/${productId}`)
 }
+
+// 处理每页显示数量变化
+const handleSizeChange = (val: number) => {
+    pageSize.value = val
+    currentPage.value = 1 // 重置到第一页
+    getProductsJudgement()
+}
+
+// 处理页码变化
+const handleCurrentChange = (val: number) => {
+    currentPage.value = val
+    getProductsJudgement()
+}
+
+const getProductsJudgement = () => {
+    if(activeCategory.value === 'all'){
+        getProductsAll()
+    }else{
+        getProducts()
+    }
+}
+
+// 修改获取商品列表函数
+const getProducts = () => {
+    stuffApi.getStuffList({
+        category: activeCategory.value,
+        page: currentPage.value,
+        pageSize: pageSize.value
+    }).then((res:any) =>{
+        products.value = res.stuffs
+        total.value = parseInt(res.total) // 添加总数
+    })
+}
+
+const getProductsAll = () => {
+    stuffApi.getStuffListAll({
+        category: activeCategory.value,
+        page: currentPage.value,
+        pageSize: pageSize.value
+    }).then((res:any) =>{
+        products.value = res.stuffs
+        total.value = parseInt(res.total) // 添加总数
+    })
+}
+
+onMounted(() => {
+    // getProducts()
+    getProductsAll()
+})
 </script>
 
 <style scoped>
@@ -85,11 +139,10 @@ const navigateToDetail = (productId: number) => {
 }
 
 .category-tabs {
-    margin: 2rem 0;
-    padding: 1rem 0;
+    margin: 1rem 0 2rem;
+    padding: 0.5rem 0;
     display: flex;
-    gap: 2rem;
-    border-bottom: 1px solid #2d2d2d;
+    gap: 1.5rem;
 }
 
 .tab {
@@ -178,5 +231,41 @@ const navigateToDetail = (productId: number) => {
         grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
         gap: 10px;
     }
+    .pagination-container {
+        margin-top: 20px;
+    }
+}
+
+/* 添加新的tab样式 */
+:deep(.el-tabs__nav-wrap::after) {
+    display: none;  /* 移除 Element Plus 默认的底部线条 */
+}
+
+:deep(.el-tabs__item) {
+    color: #909399;
+    font-size: 1rem;
+    padding: 0.5rem 1.5rem;
+    transition: all 0.3s ease;
+}
+
+:deep(.el-tabs__item:hover) {
+    color: #409EFF;
+}
+
+:deep(.el-tabs__item.is-active) {
+    color: #409EFF;
+    font-weight: 500;
+}
+
+/* 为激活的tab添加背景效果 */
+:deep(.el-tabs__item.is-active) {
+    background-color: rgba(64, 158, 255, 0.1);
+    border-radius: 4px;
+}
+
+.pagination-container {
+    margin-top: 30px;
+    display: flex;
+    justify-content: center;
 }
 </style>

@@ -24,6 +24,54 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
+    /v1/stuff/all:
+        post:
+            tags:
+                - Stuff
+            operationId: Stuff_ListAllStuff
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/ListAllStuffRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ListAllStuffReply'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /v1/stuff/category:
+        post:
+            tags:
+                - Stuff
+            operationId: Stuff_ListStuffByCategory
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/ListStuffByCategoryRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ListStuffByCategoryReply'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
     /v1/stuff/create:
         post:
             tags:
@@ -176,6 +224,54 @@ components:
                     description: The type of the serialized message.
             additionalProperties: true
             description: Contains an arbitrary serialized message along with a @type that describes the type of the serialized message.
+        ListAllStuffReply:
+            type: object
+            properties:
+                stuffs:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/StuffWrapper'
+                total:
+                    type: string
+                page:
+                    type: string
+                pageSize:
+                    type: string
+                totalPage:
+                    type: string
+        ListAllStuffRequest:
+            type: object
+            properties:
+                category:
+                    type: string
+                page:
+                    type: string
+                pageSize:
+                    type: string
+        ListStuffByCategoryReply:
+            type: object
+            properties:
+                stuffs:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/StuffWrapper'
+                total:
+                    type: string
+                page:
+                    type: string
+                pageSize:
+                    type: string
+                totalPage:
+                    type: string
+        ListStuffByCategoryRequest:
+            type: object
+            properties:
+                category:
+                    type: string
+                page:
+                    type: string
+                pageSize:
+                    type: string
         ListStuffReply:
             type: object
             properties: {}
@@ -195,6 +291,22 @@ components:
                         $ref: '#/components/schemas/GoogleProtobufAny'
                     description: A list of messages that carry the error details.  There is a common set of message types for APIs to use.
             description: 'The `Status` type defines a logical error model that is suitable for different programming environments, including REST APIs and RPC APIs. It is used by [gRPC](https://github.com/grpc). Each `Status` message contains three pieces of data: error code, error message, and error details. You can find out more about this error model and how to work with it in the [API Design Guide](https://cloud.google.com/apis/design/errors).'
+        StuffWrapper:
+            type: object
+            properties:
+                id:
+                    type: string
+                name:
+                    type: string
+                price:
+                    type: number
+                    format: float
+                photos:
+                    type: string
+                publisher:
+                    $ref: '#/components/schemas/UserInfo'
+                condition:
+                    type: string
         UpdateStuffReply:
             type: object
             properties: {}
@@ -204,6 +316,8 @@ components:
                 name:
                     type: string
                 avatar:
+                    type: string
+                address:
                     type: string
 tags:
     - name: Stuff

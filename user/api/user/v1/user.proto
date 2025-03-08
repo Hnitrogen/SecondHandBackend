@@ -20,6 +20,12 @@ service User {
 			body: "*"
 		};
 	};
+	rpc UpdateUserAvatar (UpdateUserAvatarRequest) returns (UpdateUserAvatarReply) {
+		option (google.api.http) = {
+			put: "/v1/user/{id}/avatar"
+			body: "*"
+		};
+	};
 	rpc DeleteUser (DeleteUserRequest) returns (DeleteUserReply) {
 		option (google.api.http) = {
 			delete: "/v1/user/{id}"
@@ -48,21 +54,27 @@ message CreateUserReply {
 }
 
 message UpdateUserRequest {
-	string id = 1 ;
+	int64 id = 1 ;
+	string name = 2;
+	string address = 3;
+	string phone = 4;
 }
-message UpdateUserReply {}
+message UpdateUserReply {
+	string response = 1;
+}
 
 message DeleteUserRequest {
-	string id = 1 ;
+	int64 id = 1 ;
 }
 message DeleteUserReply {}
 
 message GetUserRequest {
-	string id = 1 ;
+	int64 id = 1 ;
 }
 message GetUserReply {
 	string name = 1;
-	string avatar = 3;
+	string avatar = 2;
+	string address = 3;
 }
 
 message ListUserRequest {}
@@ -79,4 +91,16 @@ message UserLoginReply {
 	string email= 3;
 	string avatar= 4;
 	string role= 5;
+	string address= 6;
+	string phone= 7;
+	int64 id= 8;
+}
+
+
+message UpdateUserAvatarRequest {
+	int64 id = 1;
+	string avatar = 2;
+}
+message UpdateUserAvatarReply {
+	string response = 1;
 }

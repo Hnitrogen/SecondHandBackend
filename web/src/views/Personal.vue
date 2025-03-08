@@ -4,17 +4,35 @@
     <!-- 个人信息头部 -->
     <div class="profile-header">
       <div class="avatar-section">
-        <ImageUploader v-model="userStore.userInfo.avatar" alt="用户头像" @upload-success="handleAvatarUpload" />
-        <h2 class="welcome-text">欢迎回来, {{ userStore.userInfo?.username }}</h2>
+        <el-upload
+          class="avatar-uploader"
+          :show-file-list="false"
+          :auto-upload="false"
+          :on-change="handleAvatarChange"
+          accept="image/*"
+        >
+          <el-avatar
+            :size="100"
+            :src="userStore.userInfo.avatar"
+            class="hover:opacity-80"
+          >
+            <el-icon><UserFilled /></el-icon>
+          </el-avatar>
+          <div class="avatar-hover-text">
+            <el-icon><Edit /></el-icon>
+            <span>修改头像</span>
+          </div>
+        </el-upload>
+        <h2 class="welcome-text">欢迎回来, {{ userStore.userInfo?.name }}</h2>
       </div>
       
       <el-descriptions :column="2" border>
-        <el-descriptions-item label="用户ID">{{ userStore.userInfo?.name }}</el-descriptions-item>
-        <el-descriptions-item label="昵称">{{ userStore.userInfo?.username }}</el-descriptions-item>
+        <!-- <el-descriptions-item label="用户ID">{{ userStore.userInfo?.id }}</el-descriptions-item> -->
+        <el-descriptions-item label="昵称">{{ userStore.userInfo?.name }}</el-descriptions-item>
         <el-descriptions-item label="电子邮件">{{ userStore.userInfo?.email }}</el-descriptions-item>
-        <el-descriptions-item label="角色">
+        <!-- <el-descriptions-item label="角色">
           {{ userStore.userInfo?.role === 'ADMIN' ? '管理员' : '用户' }}
-        </el-descriptions-item>
+        </el-descriptions-item> -->
         <el-descriptions-item label="手机号码">{{ userStore.userInfo?.phone }}</el-descriptions-item>
         <el-descriptions-item label="地址">{{ userStore.userInfo?.address }}</el-descriptions-item>
       </el-descriptions>
@@ -42,11 +60,11 @@
     <!-- 编辑弹窗 -->
     <el-dialog v-model="showEditModal" title="修改信息" width="500px">
       <el-form :model="formData" label-width="100px">
-        <el-form-item label="电子邮件">
+        <!-- <el-form-item label="电子邮件">
           <el-input v-model="formData.email" />
-        </el-form-item>
+        </el-form-item> -->
         <el-form-item label="昵称">
-          <el-input v-model="formData.username" />
+          <el-input v-model="formData.name" />
         </el-form-item>
         <el-form-item label="手机号码">
           <el-input v-model="formData.phone" />
@@ -83,8 +101,9 @@
 import { ref, reactive } from 'vue'
 import { useUserStore } from '@/store/modules/user'
 import { useRouter } from 'vue-router'
-import ImageUploader from '@/components/ImageUploader.vue'
+import { Edit, UserFilled } from '@element-plus/icons-vue'
 import { userApi } from '@/api/user'
+import { mediaApi } from '@/api/media'
 import { ElMessage } from 'element-plus'
 import Navbar from '../components/Navbar.vue'
 
@@ -94,11 +113,11 @@ console.log(userStore.userInfo)
 
 const showEditModal = ref(false)
 const showPasswordModal = ref(false)
+
 const formData = reactive({
   id: userStore.userInfo?.id || 0,
   email: userStore.userInfo?.email || '',
-  username: userStore.userInfo?.username || '',
-  avatar: userStore.userInfo?.avatar || '',
+  name: userStore.userInfo?.name || '',
   phone: userStore.userInfo?.phone || '',
   address: userStore.userInfo?.address || ''
 })
@@ -131,10 +150,9 @@ const handleSubmit = async () => {
       showEditModal.value = false
 
       // migrate to userStore
-      userStore.userInfo.email = formData.email
       userStore.userInfo.phone = formData.phone
       userStore.userInfo.address = formData.address
-      userStore.userInfo.username = formData.username
+      userStore.userInfo.name = formData.name
     })
   } catch (error) {
     ElMessage.error("修改失败")
@@ -164,16 +182,29 @@ const handlePasswordSubmit = async () => {
   }
 }
 
-const handleAvatarUpload = async (resp: any) => {
+const handleAvatarChange = async (file: any) => {
   try {
-    console.log(resp)
-    await userStore.updateAvatar(resp.url) // 更新本地用户头像
-
-    // filename
-    await userApi.updateUserAvatar(resp.filename)   // 更新数据库头像
-
+    if (!file.raw) return
+    
+    const formData = new FormData()
+    formData.append('file', file.raw)
+    formData.append('type',"avatar")
+    
+    // 上传头像
+    const resp = await mediaApi.uploadImage(formData)
+    
+    userStore.userInfo.avatar = resp.preview  
+    // 更新头像数据
+    const userId:number = userStore.userInfo.id
+    await userApi.updateUserAvatar({
+      id: userId,
+      avatar: "avatar/" + resp.filename
+    })
+    
+    ElMessage.success('头像更新成功')
   } catch (error) {
     console.error('头像更新失败', error)
+    ElMessage.error('头像更新失败')
   }
 }
 
@@ -247,5 +278,37 @@ const handleAvatarUpload = async (resp: any) => {
 
 :deep(.el-descriptions__label) {
   color: var(--text-green);
+}
+
+.avatar-uploader {
+  position: relative;
+  display: inline-block;
+  cursor: pointer;
+}
+
+.avatar-hover-text {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.5);
+  color: white;
+  opacity: 0;
+  transition: opacity 0.3s;
+  border-radius: 50%;
+}
+
+.avatar-uploader:hover .avatar-hover-text {
+  opacity: 1;
+}
+
+.avatar-hover-text .el-icon {
+  font-size: 20px;
+  margin-bottom: 4px;
 }
 </style>

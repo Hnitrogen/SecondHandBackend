@@ -22,14 +22,18 @@ const _ = http.SupportPackageIsVersion1
 const OperationStuffCreateStuff = "/api.stuff.v1.Stuff/CreateStuff"
 const OperationStuffDeleteStuff = "/api.stuff.v1.Stuff/DeleteStuff"
 const OperationStuffGetStuff = "/api.stuff.v1.Stuff/GetStuff"
+const OperationStuffListAllStuff = "/api.stuff.v1.Stuff/ListAllStuff"
 const OperationStuffListStuff = "/api.stuff.v1.Stuff/ListStuff"
+const OperationStuffListStuffByCategory = "/api.stuff.v1.Stuff/ListStuffByCategory"
 const OperationStuffUpdateStuff = "/api.stuff.v1.Stuff/UpdateStuff"
 
 type StuffHTTPServer interface {
 	CreateStuff(context.Context, *CreateStuffRequest) (*CreateStuffReply, error)
 	DeleteStuff(context.Context, *DeleteStuffRequest) (*DeleteStuffReply, error)
 	GetStuff(context.Context, *GetStuffRequest) (*GetStuffReply, error)
+	ListAllStuff(context.Context, *ListAllStuffRequest) (*ListAllStuffReply, error)
 	ListStuff(context.Context, *ListStuffRequest) (*ListStuffReply, error)
+	ListStuffByCategory(context.Context, *ListStuffByCategoryRequest) (*ListStuffByCategoryReply, error)
 	UpdateStuff(context.Context, *UpdateStuffRequest) (*UpdateStuffReply, error)
 }
 
@@ -40,6 +44,8 @@ func RegisterStuffHTTPServer(s *http.Server, srv StuffHTTPServer) {
 	r.DELETE("/v1/stuff/{id}", _Stuff_DeleteStuff0_HTTP_Handler(srv))
 	r.GET("/v1/stuff/{id}", _Stuff_GetStuff0_HTTP_Handler(srv))
 	r.GET("/v1/stuff", _Stuff_ListStuff0_HTTP_Handler(srv))
+	r.POST("/v1/stuff/category", _Stuff_ListStuffByCategory0_HTTP_Handler(srv))
+	r.POST("/v1/stuff/all", _Stuff_ListAllStuff0_HTTP_Handler(srv))
 }
 
 func _Stuff_CreateStuff0_HTTP_Handler(srv StuffHTTPServer) func(ctx http.Context) error {
@@ -149,11 +155,57 @@ func _Stuff_ListStuff0_HTTP_Handler(srv StuffHTTPServer) func(ctx http.Context) 
 	}
 }
 
+func _Stuff_ListStuffByCategory0_HTTP_Handler(srv StuffHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in ListStuffByCategoryRequest
+		if err := ctx.Bind(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationStuffListStuffByCategory)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.ListStuffByCategory(ctx, req.(*ListStuffByCategoryRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*ListStuffByCategoryReply)
+		return ctx.Result(200, reply)
+	}
+}
+
+func _Stuff_ListAllStuff0_HTTP_Handler(srv StuffHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in ListAllStuffRequest
+		if err := ctx.Bind(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationStuffListAllStuff)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.ListAllStuff(ctx, req.(*ListAllStuffRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*ListAllStuffReply)
+		return ctx.Result(200, reply)
+	}
+}
+
 type StuffHTTPClient interface {
 	CreateStuff(ctx context.Context, req *CreateStuffRequest, opts ...http.CallOption) (rsp *CreateStuffReply, err error)
 	DeleteStuff(ctx context.Context, req *DeleteStuffRequest, opts ...http.CallOption) (rsp *DeleteStuffReply, err error)
 	GetStuff(ctx context.Context, req *GetStuffRequest, opts ...http.CallOption) (rsp *GetStuffReply, err error)
+	ListAllStuff(ctx context.Context, req *ListAllStuffRequest, opts ...http.CallOption) (rsp *ListAllStuffReply, err error)
 	ListStuff(ctx context.Context, req *ListStuffRequest, opts ...http.CallOption) (rsp *ListStuffReply, err error)
+	ListStuffByCategory(ctx context.Context, req *ListStuffByCategoryRequest, opts ...http.CallOption) (rsp *ListStuffByCategoryReply, err error)
 	UpdateStuff(ctx context.Context, req *UpdateStuffRequest, opts ...http.CallOption) (rsp *UpdateStuffReply, err error)
 }
 
@@ -204,6 +256,19 @@ func (c *StuffHTTPClientImpl) GetStuff(ctx context.Context, in *GetStuffRequest,
 	return &out, nil
 }
 
+func (c *StuffHTTPClientImpl) ListAllStuff(ctx context.Context, in *ListAllStuffRequest, opts ...http.CallOption) (*ListAllStuffReply, error) {
+	var out ListAllStuffReply
+	pattern := "/v1/stuff/all"
+	path := binding.EncodeURL(pattern, in, false)
+	opts = append(opts, http.Operation(OperationStuffListAllStuff))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
 func (c *StuffHTTPClientImpl) ListStuff(ctx context.Context, in *ListStuffRequest, opts ...http.CallOption) (*ListStuffReply, error) {
 	var out ListStuffReply
 	pattern := "/v1/stuff"
@@ -211,6 +276,19 @@ func (c *StuffHTTPClientImpl) ListStuff(ctx context.Context, in *ListStuffReques
 	opts = append(opts, http.Operation(OperationStuffListStuff))
 	opts = append(opts, http.PathTemplate(pattern))
 	err := c.cc.Invoke(ctx, "GET", path, nil, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+func (c *StuffHTTPClientImpl) ListStuffByCategory(ctx context.Context, in *ListStuffByCategoryRequest, opts ...http.CallOption) (*ListStuffByCategoryReply, error) {
+	var out ListStuffByCategoryReply
+	pattern := "/v1/stuff/category"
+	path := binding.EncodeURL(pattern, in, false)
+	opts = append(opts, http.Operation(OperationStuffListStuffByCategory))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
 	if err != nil {
 		return nil, err
 	}

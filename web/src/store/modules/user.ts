@@ -4,10 +4,11 @@ interface UserState {
     token: string
     userInfo: {
         id: number
-        username: string
+        name: string
         email: string
         avatar?: string
-        role: 'admin' | 'author' | 'reader'
+        address?: string
+        phone?: string
     } | null
 }
 
@@ -18,20 +19,26 @@ export const useUserStore = defineStore('user', {
     }),
 
     actions: {
-        setLoginState(data: { token: string; username: string; email: string; avatar: string; role: string }) {
+        setLoginState(data: { id: number; token: string; username: string; email: string; avatar: string; address: string; phone: string; role: string }) {
             this.token = data.token
             this.userInfo = {
-                id: 1,
-                username: data.username,
+                id: data.id,
+                name: data.username,
                 email: data.email,
                 avatar: data.avatar,
-                role: data.role as 'admin' | 'author' | 'reader'
+                address: data.address,
+                phone: data.phone,
             }
         },
         clearLoginState() {
             this.token = ''
             this.userInfo = null
             localStorage.removeItem('token')
+        },
+        updateAvatar(avatar: string) {
+            if (this.userInfo) {
+                this.userInfo.avatar = avatar
+            }
         }
     },
 

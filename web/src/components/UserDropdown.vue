@@ -2,7 +2,7 @@
     <el-dropdown trigger="click" @command="handleCommand">
         <div class="user-info">
             <el-avatar :size="32" :src="userStore.userInfo?.avatar || defaultAvatar" />
-            <span class="username">{{ userStore.userInfo?.username }}</span>
+            <span class="username">{{ userStore.userInfo?.name }}</span>
         </div>
 
         <template #dropdown>

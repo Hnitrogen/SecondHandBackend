@@ -5,7 +5,7 @@ import UserDropdown from './UserDropdown.vue'
 import { useUserStore } from '@/store/modules/user'
 
 const router = useRouter()
-const categories = ['我的收藏']
+const categories = []
 const searchQuery = ref('')
 const userStore = useUserStore()
 

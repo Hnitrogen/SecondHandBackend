@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"strconv"
 
 	pb "stuff/api/category/v1"
 	"stuff/internal/biz"
@@ -39,7 +38,7 @@ func (s *CategoryService) ListCategory(ctx context.Context, req *pb.ListCategory
 	categoryList := make([]*pb.CategoryWrapper, 0)
 	for _, c := range category {
 		categoryList = append(categoryList, &pb.CategoryWrapper{
-			Id:   strconv.FormatInt(c.ID, 10),
+			Id:   c.ID,
 			Name: c.Name,
 		})
 	}

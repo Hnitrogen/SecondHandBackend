@@ -143,7 +143,7 @@ func main() {
 	userClient := createUserClient(logger, consulClient)
 
 	// 初始化应用
-	app, cleanup, err := wireApp(bc.Server, bc.Data, logger, userClient)
+	app, cleanup, err := wireApp(bc.Server, bc.Data, bc.Media, logger, userClient)
 	if err != nil {
 		panic(err)
 	}
