@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+package api.user.v1;
+
+option go_package = "SecondHandBackend-master/api/other/user/v1;v1";
+service User {
+	rpc GetUser (GetUserRequest) returns (GetUserReply) {
+	};
+}
+
+message GetUserRequest {
+	int64 id = 1 ;
+}
+
+message GetUserReply {
+	string name = 1;
+	string avatar = 2;
+	string address = 3;
+}
+

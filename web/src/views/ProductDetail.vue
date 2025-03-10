@@ -12,6 +12,7 @@
                             <div class="seller-location">{{ productDetail.publisher.address }}</div>
                         </div>
                     </div>
+                    <!-- {{ productDetail.publisher.avatar }} -->
                     <el-button type="primary" plain @click="followSeller">+ 关注</el-button>
                 </div>
             </div>
@@ -26,16 +27,13 @@
                             <img :src="image" class="carousel-image" />
                         </el-carousel-item> -->
                     </el-carousel>
-                    
+
                     <div class="product-description">
                         <h3>商品详情</h3>
                         <div class="description-text">{{ productDetail.description }}</div>
                         <div class="image-list">
-                            <img v-for="(image, index) in productDetail.detailImages" 
-                                :key="index" 
-                                :src="image" 
-                                class="detail-image"
-                            />
+                            <img v-for="(image, index) in productDetail.detailImages" :key="index" :src="image"
+                                class="detail-image" />
                         </div>
                     </div>
                 </div>
@@ -84,14 +82,14 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { Star, Warning } from '@element-plus/icons-vue'
 import Navbar from '../components/Navbar.vue'
 import { stuffApi } from '@/api/stuff'
 const route = useRoute()
 const productId = route.params.id
-
+const router = useRouter()
 const productDetail = ref({})
 stuffApi.getStuffDetail(productId).then((res: any) => {
     productDetail.value = res
@@ -144,6 +142,22 @@ const handleReport = () => {
 // 处理聊天
 const handleChat = () => {
     ElMessage.info('正在打开聊天窗口')
+    // 只传递必要的聊天信息，避免传递过大的对象
+    const chatInfo = {
+        sellerId: productDetail.value.publisher.id,
+        sellerName: productDetail.value.publisher.name,
+        sellerAvatar: productDetail.value.publisher.avatar,
+        productId: productId,
+        productName: productDetail.value.name,
+        productPrice: productDetail.value.price
+    }
+
+    router.push({
+        path: '/chat',
+        query: {
+            chatInfo: encodeURIComponent(JSON.stringify(chatInfo))
+        }
+    })
 }
 
 // 处理购买
@@ -311,7 +325,8 @@ onMounted(() => {
     padding: 0 20px;
 }
 
-.action-left, .action-right {
+.action-left,
+.action-right {
     display: flex;
     gap: 10px;
 }
@@ -320,13 +335,13 @@ onMounted(() => {
     .product-content {
         grid-template-columns: 1fr;
     }
-    
+
     .detail-container {
         padding: 10px;
     }
-    
+
     .action-container {
         padding: 0 10px;
     }
 }
-</style> 
+</style>
