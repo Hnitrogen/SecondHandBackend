@@ -61,6 +61,7 @@ func (s *UserService) GetUser(ctx context.Context, req *pb.GetUserRequest) (*pb.
 		Name:    user.Name,
 		Avatar:  s.conf.ImageUrl + user.Avatar,
 		Address: user.Address,
+		UserId:  int64(user.ID),
 	}, nil
 }
 

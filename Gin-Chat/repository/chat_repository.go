@@ -45,7 +45,7 @@ func GetMessages(userId, targetId, itemId uint, page, pageSize int) ([]model.Mes
 
 	// 分页获取消息
 	offset := (page - 1) * pageSize
-	err = query.Order("created_at DESC").
+	err = query.Order("created_at ASC").
 		Limit(pageSize).
 		Offset(offset).
 		Find(&messages).Error
@@ -196,4 +196,16 @@ func GetUserIdByWebsocketConn(connId string) (uint, error) {
 	}
 
 	return 0, fmt.Errorf("未找到用户")
+}
+
+// GetLastMessage 获取最后一条消息
+func GetLastMessage(userId, targetId, itemId uint) (model.Message, error) {
+	var message model.Message
+	err := DB.Where("sender_id = ? AND receiver_id = ? AND item_id = ?", userId, targetId, itemId).Order("created_at DESC").First(&message).Error
+	if err != nil {
+		// 存在无消息的情况
+		return model.Message{}, err
+	}
+
+	return message, nil
 }

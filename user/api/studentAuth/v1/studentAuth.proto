@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+package ..api.studentAuth.v1;
+
+option go_package = "user/./api/studentAuth/v1;v1";
+option java_multiple_files = true;
+option java_package = "..api.studentAuth.v1";
+
+service StudentAuth {
+	rpc CreateStudentAuth (CreateStudentAuthRequest) returns (CreateStudentAuthReply);
+	rpc UpdateStudentAuth (UpdateStudentAuthRequest) returns (UpdateStudentAuthReply);
+	rpc DeleteStudentAuth (DeleteStudentAuthRequest) returns (DeleteStudentAuthReply);
+	rpc GetStudentAuth (GetStudentAuthRequest) returns (GetStudentAuthReply);
+	rpc ListStudentAuth (ListStudentAuthRequest) returns (ListStudentAuthReply);
+}
+
+message CreateStudentAuthRequest {}
+message CreateStudentAuthReply {}
+
+message UpdateStudentAuthRequest {}
+message UpdateStudentAuthReply {}
+
+message DeleteStudentAuthRequest {}
+message DeleteStudentAuthReply {}
+
+message GetStudentAuthRequest {}
+message GetStudentAuthReply {}
+
+message ListStudentAuthRequest {}
+message ListStudentAuthReply {}

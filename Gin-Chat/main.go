@@ -10,6 +10,7 @@ import (
 
 	"SecondHandBackend-master/Gin-Chat/api"
 	"SecondHandBackend-master/Gin-Chat/config"
+	"SecondHandBackend-master/Gin-Chat/consul"
 	"SecondHandBackend-master/Gin-Chat/repository"
 )
 
@@ -32,6 +33,9 @@ func main() {
 	if err != nil {
 		log.Fatalf("初始化Redis连接失败: %v", err)
 	}
+
+	// 初始化Consul连接
+	consul.Register(config.ConsulAddr, 8084, "Gin-Chat", []string{"gin-chat"}, "Gin-Chat")
 
 	// 创建Gin实例
 	r := gin.Default()

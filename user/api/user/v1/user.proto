@@ -75,6 +75,7 @@ message GetUserReply {
 	string name = 1;
 	string avatar = 2;
 	string address = 3;
+	int64 userId = 4;
 }
 
 message ListUserRequest {}

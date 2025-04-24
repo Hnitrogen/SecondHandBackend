@@ -13,7 +13,7 @@
                         </div>
                     </div>
                     <!-- {{ productDetail.publisher.avatar }} -->
-                    <el-button type="primary" plain @click="followSeller">+ 关注</el-button>
+                    <!-- <el-button type="primary" plain @click="followSeller">+ 关注</el-button> -->
                 </div>
             </div>
 
@@ -68,12 +68,12 @@
         <div class="action-bar">
             <div class="action-container">
                 <div class="action-left">
-                    <el-button :icon="Star" @click="handleCollect">收藏</el-button>
-                    <el-button :icon="Warning" @click="handleReport">举报</el-button>
+                    <!-- <el-button :icon="Star" @click="handleCollect">收藏</el-button>
+                    <el-button :icon="Warning" @click="handleReport">举报</el-button> -->
                 </div>
                 <div class="action-right">
                     <el-button type="primary" @click="handleChat">联系卖家</el-button>
-                    <el-button type="danger" @click="handleBuy">立即购买</el-button>
+                    <!-- <el-button type="danger" @click="handleBuy">立即购买</el-button> -->
                 </div>
             </div>
         </div>
@@ -144,12 +144,10 @@ const handleChat = () => {
     ElMessage.info('正在打开聊天窗口')
     // 只传递必要的聊天信息，避免传递过大的对象
     const chatInfo = {
-        sellerId: productDetail.value.publisher.id,
+        sellerId: productDetail.value.publisher.userId,
         sellerName: productDetail.value.publisher.name,
         sellerAvatar: productDetail.value.publisher.avatar,
         productId: productId,
-        productName: productDetail.value.name,
-        productPrice: productDetail.value.price
     }
 
     router.push({

@@ -198,6 +198,11 @@ func GetMessages(userId, targetId, itemId uint, page, pageSize int) ([]model.Mes
 	return repository.GetMessages(userId, targetId, itemId, page, pageSize)
 }
 
+// GetLastMessage 获取最后一条消息
+func GetLastMessage(userId, targetId, itemId uint) (model.Message, error) {
+	return repository.GetLastMessage(userId, targetId, itemId)
+}
+
 // GetConversations 获取会话列表
 func GetConversations(userId uint) ([]model.Conversation, error) {
 	return repository.GetConversations(userId)

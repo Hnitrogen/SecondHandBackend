@@ -50,3 +50,8 @@ func LoadConfig(filePath string) error {
 	decoder := json.NewDecoder(file)
 	return decoder.Decode(&GlobalConfig)
 }
+
+const (
+	ConsulAddr   = "127.0.0.1:8500"
+	ConsulHealth = "http://127.0.0.1:8084/health"
+)

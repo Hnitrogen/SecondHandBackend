@@ -73,6 +73,7 @@ func (s *StuffService) GetStuff(ctx context.Context, req *pb.GetStuffRequest) (*
 			Name:    userResp.Name,
 			Avatar:  userResp.Avatar,
 			Address: userResp.Address,
+			UserId:  userResp.UserId,
 		},
 		Category:  stuff.Category,
 		Price:     float32(price),

@@ -40,7 +40,7 @@
 
     <!-- 功能卡片区域 -->
     <el-row :gutter="20" class="profile-cards">
-      <el-col :span="6" v-for="(item, index) in menuItems" :key="index">
+      <el-col :span="4" v-for="(item, index) in menuItems" :key="index">
         <el-card class="profile-card" shadow="hover" @click="router.push(item.path)">
           <el-icon :size="24" class="card-icon">
             <component :is="item.icon" />
@@ -132,8 +132,9 @@ const passwordForm = reactive({
 const menuItems = [
   { title: '我要卖闲置', path: '/sell-stuff', icon: 'Sell' },
   { title: '我的闲置', path: '/MyBooks', icon: 'Reading' },
-  { title: '我的收藏', path: '/MyFavourite', icon: 'Star' },
-  { title: '我的评价', path: '/MyRating', icon: 'ChatSquare' }
+  // { title: '我的收藏', path: '/MyFavourite', icon: 'Star' },
+  { title: '我的消息', path: '/chat', icon: 'ChatSquare' },
+  // { title: '学生认证', path: '/MyRating', icon: 'ChatSquare' }
 ]
 
 const handleLogout = () => {

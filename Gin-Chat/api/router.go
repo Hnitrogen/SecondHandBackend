@@ -1,6 +1,8 @@
 package api
 
 import (
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 
 	"SecondHandBackend-master/Gin-Chat/handler"
@@ -26,4 +28,13 @@ func SetupRouter(r *gin.Engine) {
 
 	// WebSocket 接口
 	r.GET("/ws", handler.WebSocketHandler)
+
+	// Consul健康检查接口
+	r.GET("/health", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{
+			"code":    http.StatusOK,
+			"success": true,
+		})
+	})
+
 }

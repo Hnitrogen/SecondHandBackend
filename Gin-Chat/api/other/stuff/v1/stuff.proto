@@ -1,0 +1,35 @@
+syntax = "proto3";
+
+package api.stuff.v1;
+
+
+option go_package = "SecondHandBackend-master/api/other/stuff/v1;v1";
+option java_multiple_files = true;
+option java_package = "api.stuff.v1";
+
+service Stuff {
+	rpc GetStuff (GetStuffRequest) returns (GetStuffReply) {};
+}
+
+message GetStuffRequest {
+	string id = 1;
+}
+
+message UserInfo {
+	string name = 1;
+	string avatar = 2;
+	string address = 3;
+	int64 userId = 4;
+}
+
+message GetStuffReply {
+	int64 id = 1;
+	string name = 2;
+	int64 category = 3;
+	float price = 4;
+	string photos = 5;
+	UserInfo publisher = 6;
+	string condition = 7;
+	string description = 8;
+}
+

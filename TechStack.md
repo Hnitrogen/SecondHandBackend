@@ -49,3 +49,24 @@
             - utils 存放工具函数
             - views 存放页面
 
+
+
+graph TD
+    A[浏览器 Vue前端] -->|RESTful请求| B(Nginx)
+    B --> C[用户服务]
+    B --> D[商品服务]
+    B --> E[消息服务]
+    B --> F[监控服务]
+    B --> G[图传服务]
+    
+    C --> H[(MySQL)]
+    D --> I[(MySQL)]
+    E --> J[(MySQL)]
+    F --> K[(MySQL)]
+    G --> L[(MySQL)]
+    
+    C <--> M[Consul]
+    D <--> M
+    E <--> M
+    F <--> M
+    G <--> M

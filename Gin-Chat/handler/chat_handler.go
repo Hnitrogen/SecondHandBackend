@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"context"
 	"log"
 	"net/http"
 	"strconv"
@@ -9,6 +10,9 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 
+	stuffpb "SecondHandBackend-master/Gin-Chat/api/other/stuff/v1/SecondHandBackend-master/api/other/stuff/v1"
+	userpb "SecondHandBackend-master/Gin-Chat/api/other/user/v1/SecondHandBackend-master/api/other/user/v1"
+	"SecondHandBackend-master/Gin-Chat/consul"
 	"SecondHandBackend-master/Gin-Chat/model"
 	"SecondHandBackend-master/Gin-Chat/service"
 )
@@ -115,6 +119,27 @@ func SendMessageHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "消息发送成功"})
 }
 
+type UserInfo struct {
+	Id       uint   `json:"id"`
+	Username string `json:"username"`
+	Avatar   string `json:"avatar"`
+}
+
+type StuffInfo struct {
+	Id        uint    `json:"id"`
+	Name      string  `json:"name"`
+	Price     float64 `json:"price"`
+	Photos    string  `json:"photos"`
+	Condition string  `json:"condition"`
+}
+
+type ConversationWithUserInfo struct {
+	model.Conversation
+	UserInfo    UserInfo  `json:"user_info"`
+	LastMessage string    `json:"last_message"`
+	StuffInfo   StuffInfo `json:"stuff_info"`
+}
+
 // GetMessagesHandler 获取消息历史
 func GetMessagesHandler(c *gin.Context) {
 	// 获取参数
@@ -165,11 +190,39 @@ func GetMessagesHandler(c *gin.Context) {
 		log.Printf("标记消息为已读失败: %v", err)
 	}
 
+	// 获取商品信息
+	stuffClient, err := consul.CreateStuffClient()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error with get stuff info RPC": err.Error()})
+		return
+	}
+
+	stuffResp, _ := stuffClient.GetStuff(context.Background(), &stuffpb.GetStuffRequest{
+		Id: strconv.FormatUint(uint64(itemId), 10),
+	})
+
+	userClient, err := consul.CreateUserClient()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error with get user info RPC": err.Error()})
+		return
+	}
+
+	SenderInfo, _ := userClient.GetUser(context.Background(), &userpb.GetUserRequest{
+		Id: int64(targetId),
+	})
+
+	ReceiverInfo, _ := userClient.GetUser(context.Background(), &userpb.GetUserRequest{
+		Id: int64(userId),
+	})
+
 	c.JSON(http.StatusOK, gin.H{
-		"messages": messages,
-		"total":    total,
-		"page":     page,
-		"pageSize": pageSize,
+		"messages":     messages,
+		"total":        total,
+		"page":         page,
+		"pageSize":     pageSize,
+		"productInfo":  stuffResp,
+		"senderInfo":   SenderInfo,
+		"receiverInfo": ReceiverInfo,
 	})
 }
 
@@ -192,8 +245,59 @@ func GetConversationsHandler(c *gin.Context) {
 		return
 	}
 
+	resp := make([]ConversationWithUserInfo, len(conversations))
+
+	for i, conversation := range conversations {
+		userClient, err := consul.CreateUserClient()
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error with get user info RPC": err.Error()})
+			return
+		}
+
+		// 获取用户信息
+		userResp, err := userClient.GetUser(context.Background(), &userpb.GetUserRequest{
+			Id: int64(conversation.TargetUserId),
+		})
+
+		stuffClient, _ := consul.CreateStuffClient()
+		stuffResp, err := stuffClient.GetStuff(context.Background(), &stuffpb.GetStuffRequest{
+			Id: strconv.FormatUint(uint64(conversation.ItemId), 10),
+		})
+
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error with get stuff info RPC": err.Error()})
+			return
+		}
+
+		lastMessage, _ := service.GetLastMessage(uint(userId), uint(conversation.TargetUserId), uint(conversation.ItemId))
+
+		resp[i] = ConversationWithUserInfo{
+			Conversation: conversation,
+			UserInfo: UserInfo{
+				Id:       conversation.TargetUserId,
+				Username: userResp.Name,
+				Avatar:   userResp.Avatar,
+			},
+			LastMessage: lastMessage.Content,
+
+			StuffInfo: StuffInfo{
+				Id:        uint(stuffResp.Id),
+				Name:      stuffResp.Name,
+				Price:     float64(stuffResp.Price),
+				Photos:    stuffResp.Photos,
+				Condition: stuffResp.Condition,
+			},
+		}
+	}
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	// targer_user_id 为收到消息的用户 -> 补充序列化收到消息的UserInfo 以及 最后一条消息正文
 	c.JSON(http.StatusOK, gin.H{
-		"conversations": conversations,
+		"conversations": resp,
 	})
 }
 

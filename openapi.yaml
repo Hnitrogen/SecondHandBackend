@@ -3,19 +3,106 @@
 
 openapi: 3.0.3
 info:
-    title: Greeter API
-    description: The greeting service definition.
+    title: Stuff API
     version: 0.0.1
 paths:
-    /helloworld/{name}:
+    /v1/stuff:
         get:
             tags:
-                - Greeter
-                - subgroup
-            description: Sends a greeting
-            operationId: Greeter_SayHello
+                - Stuff
+            operationId: Stuff_ListStuff
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ListStuffReply'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /v1/stuff/all:
+        post:
+            tags:
+                - Stuff
+            operationId: Stuff_ListAllStuff
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/ListAllStuffRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ListAllStuffReply'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /v1/stuff/category:
+        post:
+            tags:
+                - Stuff
+            operationId: Stuff_ListStuffByCategory
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/ListStuffByCategoryRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ListStuffByCategoryReply'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /v1/stuff/create:
+        post:
+            tags:
+                - Stuff
+            operationId: Stuff_CreateStuff
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/CreateStuffRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/CreateStuffReply'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /v1/stuff/{id}:
+        get:
+            tags:
+                - Stuff
+            operationId: Stuff_GetStuff
             parameters:
-                - name: name
+                - name: id
                   in: path
                   required: true
                   schema:
@@ -26,14 +113,213 @@ paths:
                     content:
                         application/json:
                             schema:
-                                $ref: '#/components/schemas/helloworld.v1.HelloReply'
+                                $ref: '#/components/schemas/GetStuffReply'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+        put:
+            tags:
+                - Stuff
+            operationId: Stuff_UpdateStuff
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+                - name: name
+                  in: query
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/UpdateStuffReply'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+        delete:
+            tags:
+                - Stuff
+            operationId: Stuff_DeleteStuff
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/DeleteStuffReply'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
 components:
     schemas:
-        helloworld.v1.HelloReply:
+        CreateStuffReply:
+            type: object
+            properties: {}
+        CreateStuffRequest:
             type: object
             properties:
+                name:
+                    type: string
+                category:
+                    type: string
+                price:
+                    type: number
+                    format: float
+                photos:
+                    type: string
+                publisher:
+                    type: string
+                condition:
+                    type: string
+                description:
+                    type: string
+        DeleteStuffReply:
+            type: object
+            properties: {}
+        GetStuffReply:
+            type: object
+            properties:
+                id:
+                    type: string
+                name:
+                    type: string
+                category:
+                    type: string
+                price:
+                    type: number
+                    format: float
+                photos:
+                    type: string
+                publisher:
+                    $ref: '#/components/schemas/UserInfo'
+                condition:
+                    type: string
+                description:
+                    type: string
+        GoogleProtobufAny:
+            type: object
+            properties:
+                '@type':
+                    type: string
+                    description: The type of the serialized message.
+            additionalProperties: true
+            description: Contains an arbitrary serialized message along with a @type that describes the type of the serialized message.
+        ListAllStuffReply:
+            type: object
+            properties:
+                stuffs:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/StuffWrapper'
+                total:
+                    type: string
+                page:
+                    type: string
+                pageSize:
+                    type: string
+                totalPage:
+                    type: string
+        ListAllStuffRequest:
+            type: object
+            properties:
+                category:
+                    type: string
+                page:
+                    type: string
+                pageSize:
+                    type: string
+        ListStuffByCategoryReply:
+            type: object
+            properties:
+                stuffs:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/StuffWrapper'
+                total:
+                    type: string
+                page:
+                    type: string
+                pageSize:
+                    type: string
+                totalPage:
+                    type: string
+        ListStuffByCategoryRequest:
+            type: object
+            properties:
+                category:
+                    type: string
+                page:
+                    type: string
+                pageSize:
+                    type: string
+        ListStuffReply:
+            type: object
+            properties: {}
+        Status:
+            type: object
+            properties:
+                code:
+                    type: integer
+                    description: The status code, which should be an enum value of [google.rpc.Code][google.rpc.Code].
+                    format: int32
                 message:
                     type: string
-            description: The response message containing the greetings
+                    description: A developer-facing error message, which should be in English. Any user-facing error message should be localized and sent in the [google.rpc.Status.details][google.rpc.Status.details] field, or localized by the client.
+                details:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/GoogleProtobufAny'
+                    description: A list of messages that carry the error details.  There is a common set of message types for APIs to use.
+            description: 'The `Status` type defines a logical error model that is suitable for different programming environments, including REST APIs and RPC APIs. It is used by [gRPC](https://github.com/grpc). Each `Status` message contains three pieces of data: error code, error message, and error details. You can find out more about this error model and how to work with it in the [API Design Guide](https://cloud.google.com/apis/design/errors).'
+        StuffWrapper:
+            type: object
+            properties:
+                id:
+                    type: string
+                name:
+                    type: string
+                price:
+                    type: number
+                    format: float
+                photos:
+                    type: string
+                publisher:
+                    $ref: '#/components/schemas/UserInfo'
+                condition:
+                    type: string
+        UpdateStuffReply:
+            type: object
+            properties: {}
+        UserInfo:
+            type: object
+            properties:
+                name:
+                    type: string
+                avatar:
+                    type: string
+                address:
+                    type: string
+                userId:
+                    type: string
 tags:
-    - name: Greeter
+    - name: Stuff

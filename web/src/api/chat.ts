@@ -6,5 +6,8 @@ export const chatApi = {
     },
     getMessageList(data: { userId: number, targetId: number, itemId: number }) {
         return http.get<any>('/chat/messages', { params: data })
+    },
+    getConversationList(data: { userId: number }) {
+        return http.get<any>('/chat/conversations', { params: data })
     }
 }

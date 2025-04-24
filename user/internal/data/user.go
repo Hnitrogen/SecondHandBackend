@@ -16,6 +16,7 @@ type User struct {
 	Avatar   string
 	Address  string
 	Phone    string
+	Role     string // Role = 'student' or 'admin' or 'guest'
 }
 
 type UserRepo interface {

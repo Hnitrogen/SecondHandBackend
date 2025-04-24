@@ -49,3 +49,9 @@ docker build -t <your-docker-image-name> .
 docker run --rm -p 8000:8000 -p 9000:9000 -v </path/to/your/configs>:/data/conf <your-docker-image-name>
 ```
 
+
+## 服务启动方式 TODO
+本地服务都采用一键脚本完成，在我的Windows 台式机上，命令没有写成脚本（懒）
+```网关Nginx
+    
+```
