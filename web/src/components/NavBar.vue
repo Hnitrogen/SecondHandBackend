@@ -33,7 +33,7 @@ const handleSearch = () => {
     <div class="nav-wrapper">
         <nav class="navbar">
             <div class="nav-left">
-                <router-link to="/" class="logo">校园二手商城</router-link>
+                <router-link to="/" class="logo">校园二手平台</router-link>
                 <div class="nav-links">
                     <router-link to="/" class="nav-item">首页</router-link>
                     <a href="#" class="nav-item" v-for="category in categories" :key="category"
@@ -44,10 +44,12 @@ const handleSearch = () => {
             </div>
             <div class="nav-right">
                 <div class="search-box">
-                    <input type="text" v-model="searchQuery" placeholder="搜索商品" @keyup.enter="handleSearch">
-                    <button class="search-btn" @click="handleSearch">
-                        <el-icon><Search /></el-icon>
-                    </button>
+                    <!-- <input type="text" v-model="searchQuery" placeholder="搜索商品" @keyup.enter="handleSearch"> -->
+                    <!-- <button class="search-btn" @click="handleSearch">
+                        <el-icon>
+                            <Search />
+                        </el-icon>
+                    </button> -->
                 </div>
                 <a @click="goToLogin" class="login-btn" v-if="!userStore.token">登录</a>
                 <UserDropdown v-else />

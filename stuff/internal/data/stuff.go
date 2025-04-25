@@ -194,3 +194,39 @@ func (r *stuffRepo) GetTotal(ctx context.Context) int64 {
 	r.data.db.WithContext(ctx).Model(&Stuff{}).Count(&total)
 	return total
 }
+
+func (r *stuffRepo) ListByUser(ctx context.Context, userID int64, page int64, pageSize int64) ([]*biz.Stuff, error) {
+	var stuffs []*Stuff
+	offset := (page - 1) * pageSize
+
+	if err := r.data.db.WithContext(ctx).
+		Where("publisher = ?", userID).
+		Offset(int(offset)).
+		Limit(int(pageSize)).
+		Find(&stuffs).Error; err != nil {
+		r.log.WithContext(ctx).Errorf("ListByUser: %v", err)
+		return nil, err
+	}
+
+	result := make([]*biz.Stuff, 0, len(stuffs))
+	for _, s := range stuffs {
+		result = append(result, &biz.Stuff{
+			ID:          s.ID,
+			Name:        s.Name,
+			Category:    s.Category,
+			Price:       s.Price,
+			Photos:      s.Photos,
+			Publisher:   s.Publisher,
+			Status:      s.Status,
+			Condition:   s.Condition,
+			Description: s.Description,
+		})
+	}
+	return result, nil
+}
+
+func (r *stuffRepo) GetTotalByUser(ctx context.Context, userID int64) int64 {
+	var total int64
+	r.data.db.WithContext(ctx).Model(&Stuff{}).Where("publisher = ?", userID).Count(&total)
+	return total
+}

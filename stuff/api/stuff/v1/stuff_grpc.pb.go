@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.5.1
 // - protoc             v6.30.0--rc1
-// source: stuff/api/stuff/v1/stuff.proto
+// source: api/stuff/v1/stuff.proto
 
 package v1
 
@@ -26,6 +26,7 @@ const (
 	Stuff_ListStuff_FullMethodName           = "/api.stuff.v1.Stuff/ListStuff"
 	Stuff_ListStuffByCategory_FullMethodName = "/api.stuff.v1.Stuff/ListStuffByCategory"
 	Stuff_ListAllStuff_FullMethodName        = "/api.stuff.v1.Stuff/ListAllStuff"
+	Stuff_ListStuffByUser_FullMethodName     = "/api.stuff.v1.Stuff/ListStuffByUser"
 )
 
 // StuffClient is the client API for Stuff service.
@@ -39,6 +40,7 @@ type StuffClient interface {
 	ListStuff(ctx context.Context, in *ListStuffRequest, opts ...grpc.CallOption) (*ListStuffReply, error)
 	ListStuffByCategory(ctx context.Context, in *ListStuffByCategoryRequest, opts ...grpc.CallOption) (*ListStuffByCategoryReply, error)
 	ListAllStuff(ctx context.Context, in *ListAllStuffRequest, opts ...grpc.CallOption) (*ListAllStuffReply, error)
+	ListStuffByUser(ctx context.Context, in *ListStuffByUserRequest, opts ...grpc.CallOption) (*ListStuffByUserReply, error)
 }
 
 type stuffClient struct {
@@ -119,6 +121,16 @@ func (c *stuffClient) ListAllStuff(ctx context.Context, in *ListAllStuffRequest,
 	return out, nil
 }
 
+func (c *stuffClient) ListStuffByUser(ctx context.Context, in *ListStuffByUserRequest, opts ...grpc.CallOption) (*ListStuffByUserReply, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListStuffByUserReply)
+	err := c.cc.Invoke(ctx, Stuff_ListStuffByUser_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // StuffServer is the server API for Stuff service.
 // All implementations must embed UnimplementedStuffServer
 // for forward compatibility.
@@ -130,6 +142,7 @@ type StuffServer interface {
 	ListStuff(context.Context, *ListStuffRequest) (*ListStuffReply, error)
 	ListStuffByCategory(context.Context, *ListStuffByCategoryRequest) (*ListStuffByCategoryReply, error)
 	ListAllStuff(context.Context, *ListAllStuffRequest) (*ListAllStuffReply, error)
+	ListStuffByUser(context.Context, *ListStuffByUserRequest) (*ListStuffByUserReply, error)
 	mustEmbedUnimplementedStuffServer()
 }
 
@@ -160,6 +173,9 @@ func (UnimplementedStuffServer) ListStuffByCategory(context.Context, *ListStuffB
 }
 func (UnimplementedStuffServer) ListAllStuff(context.Context, *ListAllStuffRequest) (*ListAllStuffReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListAllStuff not implemented")
+}
+func (UnimplementedStuffServer) ListStuffByUser(context.Context, *ListStuffByUserRequest) (*ListStuffByUserReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListStuffByUser not implemented")
 }
 func (UnimplementedStuffServer) mustEmbedUnimplementedStuffServer() {}
 func (UnimplementedStuffServer) testEmbeddedByValue()               {}
@@ -308,6 +324,24 @@ func _Stuff_ListAllStuff_Handler(srv interface{}, ctx context.Context, dec func(
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Stuff_ListStuffByUser_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListStuffByUserRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(StuffServer).ListStuffByUser(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: Stuff_ListStuffByUser_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(StuffServer).ListStuffByUser(ctx, req.(*ListStuffByUserRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Stuff_ServiceDesc is the grpc.ServiceDesc for Stuff service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -343,7 +377,11 @@ var Stuff_ServiceDesc = grpc.ServiceDesc{
 			MethodName: "ListAllStuff",
 			Handler:    _Stuff_ListAllStuff_Handler,
 		},
+		{
+			MethodName: "ListStuffByUser",
+			Handler:    _Stuff_ListStuffByUser_Handler,
+		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "stuff/api/stuff/v1/stuff.proto",
+	Metadata: "api/stuff/v1/stuff.proto",
 }

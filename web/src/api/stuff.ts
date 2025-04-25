@@ -37,6 +37,8 @@ export const stuffApi = {
         pageSize: number;
     }) {
         return http.post('/stuff/all', data)
+    },
+    getUserStuffs(userId: number) {
+        return http.get(`/stuff/user/${userId}?page=1&page_size=1000`)
     }
 }
-

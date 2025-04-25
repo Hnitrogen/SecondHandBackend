@@ -36,6 +36,8 @@ type StuffRepo interface {
 	GetPageCountByCategory(context.Context, int64, int64) int64
 	ListAllByPage(context.Context, int64, int64) ([]*Stuff, error)
 	GetTotal(context.Context) int64
+	ListByUser(context.Context, int64, int64, int64) ([]*Stuff, error)
+	GetTotalByUser(context.Context, int64) int64
 }
 
 // StuffUsecase 是 Stuff 的业务用例
@@ -172,6 +174,47 @@ func (uc *StuffUsecase) ListAllByPage(ctx context.Context, page int64, pageSize 
 	total := uc.repo.GetTotal(ctx)
 	totalPage := math.Ceil(float64(total) / float64(pageSize))
 	return pb.ListAllStuffReply{
+		Stuffs:    result,
+		Page:      page,
+		PageSize:  pageSize,
+		Total:     total,
+		TotalPage: int64(totalPage),
+	}, nil
+}
+
+func (uc *StuffUsecase) ListByUser(ctx context.Context, userID int64, page int64, pageSize int64) (pb.ListStuffByUserReply, error) {
+	uc.log.WithContext(ctx).Infof("List Stuff By User: %v", userID)
+	stuffs, err := uc.repo.ListByUser(ctx, userID, page, pageSize)
+	if err != nil {
+		return pb.ListStuffByUserReply{}, err
+	}
+
+	result := make([]*pb.StuffWrapper, 0, len(stuffs))
+	// Get user info once since all items are from same user
+	userResp, err := uc.GetUserInfoRPC(ctx, userID)
+	if err != nil {
+		uc.log.WithContext(ctx).Errorf("GetUserInfoRPC: %v", err)
+		return pb.ListStuffByUserReply{}, err
+	}
+
+	for _, s := range stuffs {
+		decPrice, _ := s.Price.Float64()
+		result = append(result, &pb.StuffWrapper{
+			Id:     s.ID,
+			Name:   s.Name,
+			Price:  float32(decPrice),
+			Photos: s.Photos,
+			Publisher: &pb.UserInfo{
+				Name:   userResp.Name,
+				Avatar: userResp.Avatar,
+			},
+			Condition: s.Condition,
+		})
+	}
+
+	total := uc.repo.GetTotalByUser(ctx, userID)
+	totalPage := math.Ceil(float64(total) / float64(pageSize))
+	return pb.ListStuffByUserReply{
 		Stuffs:    result,
 		Page:      page,
 		PageSize:  pageSize,

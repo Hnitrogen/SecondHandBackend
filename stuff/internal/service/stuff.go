@@ -116,3 +116,27 @@ func (s *StuffService) ListAllStuff(ctx context.Context, req *pb.ListAllStuffReq
 
 	return &stuffs, nil
 }
+
+func (s *StuffService) ListStuffByUser(ctx context.Context, req *pb.ListStuffByUserRequest) (*pb.ListStuffByUserReply, error) {
+	// Set default values for pagination
+	if req.Page <= 0 {
+		req.Page = 1
+	}
+	if req.PageSize <= 0 {
+		req.PageSize = 10
+	}
+
+	stuffs, err := s.uc.ListByUser(ctx, req.UserId, req.Page, req.PageSize)
+	if err != nil {
+		return nil, err
+	}
+
+	// Update photo URLs
+	for _, stuff := range stuffs.Stuffs {
+		if stuff.Photos != "" {
+			stuff.Photos = s.media.ImageUrl + "stuff/" + stuff.Photos
+		}
+	}
+
+	return &stuffs, nil
+}

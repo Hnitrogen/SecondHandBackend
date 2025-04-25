@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-http v2.8.3
 // - protoc             v6.30.0--rc1
-// source: stuff/api/stuff/v1/stuff.proto
+// source: api/stuff/v1/stuff.proto
 
 package v1
 
@@ -25,6 +25,7 @@ const OperationStuffGetStuff = "/api.stuff.v1.Stuff/GetStuff"
 const OperationStuffListAllStuff = "/api.stuff.v1.Stuff/ListAllStuff"
 const OperationStuffListStuff = "/api.stuff.v1.Stuff/ListStuff"
 const OperationStuffListStuffByCategory = "/api.stuff.v1.Stuff/ListStuffByCategory"
+const OperationStuffListStuffByUser = "/api.stuff.v1.Stuff/ListStuffByUser"
 const OperationStuffUpdateStuff = "/api.stuff.v1.Stuff/UpdateStuff"
 
 type StuffHTTPServer interface {
@@ -34,6 +35,7 @@ type StuffHTTPServer interface {
 	ListAllStuff(context.Context, *ListAllStuffRequest) (*ListAllStuffReply, error)
 	ListStuff(context.Context, *ListStuffRequest) (*ListStuffReply, error)
 	ListStuffByCategory(context.Context, *ListStuffByCategoryRequest) (*ListStuffByCategoryReply, error)
+	ListStuffByUser(context.Context, *ListStuffByUserRequest) (*ListStuffByUserReply, error)
 	UpdateStuff(context.Context, *UpdateStuffRequest) (*UpdateStuffReply, error)
 }
 
@@ -46,6 +48,7 @@ func RegisterStuffHTTPServer(s *http.Server, srv StuffHTTPServer) {
 	r.GET("/v1/stuff", _Stuff_ListStuff0_HTTP_Handler(srv))
 	r.POST("/v1/stuff/category", _Stuff_ListStuffByCategory0_HTTP_Handler(srv))
 	r.POST("/v1/stuff/all", _Stuff_ListAllStuff0_HTTP_Handler(srv))
+	r.GET("/v1/stuff/user/{user_id}", _Stuff_ListStuffByUser0_HTTP_Handler(srv))
 }
 
 func _Stuff_CreateStuff0_HTTP_Handler(srv StuffHTTPServer) func(ctx http.Context) error {
@@ -199,6 +202,28 @@ func _Stuff_ListAllStuff0_HTTP_Handler(srv StuffHTTPServer) func(ctx http.Contex
 	}
 }
 
+func _Stuff_ListStuffByUser0_HTTP_Handler(srv StuffHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in ListStuffByUserRequest
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindVars(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationStuffListStuffByUser)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.ListStuffByUser(ctx, req.(*ListStuffByUserRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*ListStuffByUserReply)
+		return ctx.Result(200, reply)
+	}
+}
+
 type StuffHTTPClient interface {
 	CreateStuff(ctx context.Context, req *CreateStuffRequest, opts ...http.CallOption) (rsp *CreateStuffReply, err error)
 	DeleteStuff(ctx context.Context, req *DeleteStuffRequest, opts ...http.CallOption) (rsp *DeleteStuffReply, err error)
@@ -206,6 +231,7 @@ type StuffHTTPClient interface {
 	ListAllStuff(ctx context.Context, req *ListAllStuffRequest, opts ...http.CallOption) (rsp *ListAllStuffReply, err error)
 	ListStuff(ctx context.Context, req *ListStuffRequest, opts ...http.CallOption) (rsp *ListStuffReply, err error)
 	ListStuffByCategory(ctx context.Context, req *ListStuffByCategoryRequest, opts ...http.CallOption) (rsp *ListStuffByCategoryReply, err error)
+	ListStuffByUser(ctx context.Context, req *ListStuffByUserRequest, opts ...http.CallOption) (rsp *ListStuffByUserReply, err error)
 	UpdateStuff(ctx context.Context, req *UpdateStuffRequest, opts ...http.CallOption) (rsp *UpdateStuffReply, err error)
 }
 
@@ -289,6 +315,19 @@ func (c *StuffHTTPClientImpl) ListStuffByCategory(ctx context.Context, in *ListS
 	opts = append(opts, http.Operation(OperationStuffListStuffByCategory))
 	opts = append(opts, http.PathTemplate(pattern))
 	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+func (c *StuffHTTPClientImpl) ListStuffByUser(ctx context.Context, in *ListStuffByUserRequest, opts ...http.CallOption) (*ListStuffByUserReply, error) {
+	var out ListStuffByUserReply
+	pattern := "/v1/stuff/user/{user_id}"
+	path := binding.EncodeURL(pattern, in, true)
+	opts = append(opts, http.Operation(OperationStuffListStuffByUser))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "GET", path, nil, &out, opts...)
 	if err != nil {
 		return nil, err
 	}

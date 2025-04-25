@@ -4,28 +4,23 @@
     <!-- 个人信息头部 -->
     <div class="profile-header">
       <div class="avatar-section">
-        <el-upload
-          class="avatar-uploader"
-          :show-file-list="false"
-          :auto-upload="false"
-          :on-change="handleAvatarChange"
-          accept="image/*"
-        >
-          <el-avatar
-            :size="100"
-            :src="userStore.userInfo.avatar"
-            class="hover:opacity-80"
-          >
-            <el-icon><UserFilled /></el-icon>
+        <el-upload class="avatar-uploader" :show-file-list="false" :auto-upload="false" :on-change="handleAvatarChange"
+          accept="image/*">
+          <el-avatar :size="100" :src="userStore.userInfo.avatar" class="hover:opacity-80">
+            <el-icon>
+              <UserFilled />
+            </el-icon>
           </el-avatar>
           <div class="avatar-hover-text">
-            <el-icon><Edit /></el-icon>
+            <el-icon>
+              <Edit />
+            </el-icon>
             <span>修改头像</span>
           </div>
         </el-upload>
         <h2 class="welcome-text">欢迎回来, {{ userStore.userInfo?.name }}</h2>
       </div>
-      
+
       <el-descriptions :column="2" border>
         <!-- <el-descriptions-item label="用户ID">{{ userStore.userInfo?.id }}</el-descriptions-item> -->
         <el-descriptions-item label="昵称">{{ userStore.userInfo?.name }}</el-descriptions-item>
@@ -53,7 +48,7 @@
     <!-- 操作按钮 -->
     <div class="profile-actions">
       <el-button type="primary" @click="showEditModal = true">修改信息</el-button>
-      <el-button type="warning" @click="showPasswordModal = true">修改密码</el-button>
+      <!-- <el-button type="warning" @click="showPasswordModal = true">修改密码</el-button>/ -->
       <el-button type="danger" @click="handleLogout">退出登录</el-button>
     </div>
 
@@ -131,7 +126,7 @@ const passwordForm = reactive({
 // 添加菜单项配置
 const menuItems = [
   { title: '我要卖闲置', path: '/sell-stuff', icon: 'Sell' },
-  { title: '我的闲置', path: '/MyBooks', icon: 'Reading' },
+  { title: '我的闲置', path: '/my-products', icon: 'Reading' },
   // { title: '我的收藏', path: '/MyFavourite', icon: 'Star' },
   { title: '我的消息', path: '/chat', icon: 'ChatSquare' },
   // { title: '学生认证', path: '/MyRating', icon: 'ChatSquare' }
@@ -186,22 +181,22 @@ const handlePasswordSubmit = async () => {
 const handleAvatarChange = async (file: any) => {
   try {
     if (!file.raw) return
-    
+
     const formData = new FormData()
     formData.append('file', file.raw)
-    formData.append('type',"avatar")
-    
+    formData.append('type', "avatar")
+
     // 上传头像
     const resp = await mediaApi.uploadImage(formData)
-    
-    userStore.userInfo.avatar = resp.preview  
+
+    userStore.userInfo.avatar = resp.preview
     // 更新头像数据
-    const userId:number = userStore.userInfo.id
+    const userId: number = userStore.userInfo.id
     await userApi.updateUserAvatar({
       id: userId,
       avatar: "avatar/" + resp.filename
     })
-    
+
     ElMessage.success('头像更新成功')
   } catch (error) {
     console.error('头像更新失败', error)
